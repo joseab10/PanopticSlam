@@ -1,0 +1,28 @@
+<launch>
+
+    <arg name="kitti_dataset_path" default="$(find panoptic_slam)/../../../dat/Kitti/"/>
+    <arg name="kitti_sequence" default="8"/>
+    <arg name="bag_file" default="raw_kitti.bag"/>
+
+    <arg name="sim_pause" default="true"/>
+    <arg name="sim_quiet" default="false"/>
+    <arg name="sim_rate" default="0.25"/>
+
+    <param name="kitti_dataset_path" value="$(arg kitti_dataset_path)"/>
+    <param name="kitti_sequence" value="$(arg kitti_sequence)"/>
+
+    <arg name="kitti_sequence_path" value="$(eval arg('kitti_dataset_path') + 'sequences/' + '{:02d}/'.format(arg('kitti_sequence')) )" />
+    <arg name="kitti_bag_path" value="$(eval kitti_sequence_path + bag_file)"/>
+
+    <arg name="play_args"
+         value="$(eval
+            '--clock ' +
+            kitti_bag_path +
+            (' --pause' if sim_pause else '') +
+            (' --quiet' if sim_quiet and not sim_pause else '') +
+            ' -r ' + str(sim_rate)
+         )"/>
+    <node name="sim_kitti" pkg="rosbag" type="play" output="screen"
+          args="$(arg play_args)"/>
+
+</launch>

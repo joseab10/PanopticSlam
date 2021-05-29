@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>panoptic_slam</name>
+  <version>0.0.0</version>
+  <description>The Panoptcic SLAM package</description>
+
+  <maintainer email="jose.arce@students.uni-freiburg.de">Jose Arce</maintainer>
+
+  <license>TODO</license>
+
+  <url type="website">http://wiki.ros.org/fmp_gmapping</url>
+
+  <author>Jose Arce</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <exec_depend>roscpp</exec_depend>
+  <build_depend>rospy</build_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <build_depend>tf</build_depend>
+  <exec_depend>tf</exec_depend>
+
+  <build_depend>lio_sam</build_depend>
+  <exec_depend>lio_sam</exec_depend>
+
+
+</package>
