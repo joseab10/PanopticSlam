@@ -7,7 +7,7 @@ import numpy as np
 import rospy
 
 from panoptic_slam.kitti.exceptions import KittiError, KittiGTError, KittiTimeError
-import panoptic_slam.kitti.utils as ku
+import panoptic_slam.kitti.utils.utils as ku
 import panoptic_slam.ros.utils as ru
 
 

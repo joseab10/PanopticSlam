@@ -5,7 +5,7 @@ from sensor_msgs.msg import PointField
 from tqdm import tqdm
 
 from panoptic_slam.kitti.data_loaders import KittiRawDatasetYielder
-import panoptic_slam.kitti.utils as ku
+import panoptic_slam.kitti.utils.utils as ku
 import panoptic_slam.ros.utils as ru
 
 

@@ -6,7 +6,10 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
    packages=[
        'panoptic_slam',
+       # KITTI Tools
        'panoptic_slam.kitti', 'panoptic_slam.kitti.converters', 'panoptic_slam.kitti.data_loaders',
+       'panoptic_slam.kitti.data_analysers', 'panoptic_slam.kitti.utils',
+       # ROS Tools
        'panoptic_slam.ros', 'panoptic_slam.ros.utils'
    ],
    package_dir={

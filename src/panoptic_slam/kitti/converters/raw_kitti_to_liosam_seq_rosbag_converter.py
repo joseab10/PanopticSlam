@@ -2,7 +2,7 @@ import datetime as dt
 
 from raw_kitti_to_rosbag_converter import RawKitti2RosBagConverter
 from panoptic_slam.kitti.data_loaders import KittiDatasetYielder, KittiRawDatasetYielder
-import panoptic_slam.kitti.utils as ku
+import panoptic_slam.kitti.utils.utils as ku
 
 
 class RawKitti2LioSamSeqRosBagConverter:

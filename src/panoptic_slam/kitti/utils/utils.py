@@ -8,42 +8,17 @@ import re
 import cv2
 import numpy as np
 
-from exceptions import KittiError  # , KittiTimeError, KittiGTError
-
-
-_KITTI_RAW_SEQ_MAPPING = {
-    0:  {'date': "2011_10_03", 'drive': 27, 'start_frame':    0, 'end_frame': 4540},
-    1:  {'date': "2011_10_03", 'drive': 42, 'start_frame':    0, 'end_frame': 1100},
-    2:  {'date': "2011_10_03", 'drive': 34, 'start_frame':    0, 'end_frame': 4660},
-    3:  {'date': "2011_09_26", 'drive': 67, 'start_frame':    0, 'end_frame':  800},
-    4:  {'date': "2011_09_30", 'drive': 16, 'start_frame':    0, 'end_frame':  270},
-    5:  {'date': "2011_09_30", 'drive': 18, 'start_frame':    0, 'end_frame': 2760},
-    6:  {'date': "2011_09_30", 'drive': 20, 'start_frame':    0, 'end_frame': 1100},
-    7:  {'date': "2011_09_30", 'drive': 27, 'start_frame':    0, 'end_frame': 1100},
-    8:  {'date': "2011_09_30", 'drive': 28, 'start_frame': 1100, 'end_frame': 5170},
-    9:  {'date': "2011_09_30", 'drive': 33, 'start_frame':    0, 'end_frame': 1590},
-    10: {'date': "2011_09_30", 'drive': 34, 'start_frame':    0, 'end_frame': 1200},
-}
-
-_RAW_KITTI_CAMERA_CFG = {
-    'GRAY': {
-        'L': 0,
-        'R': 1,
-    },
-    'COLOR': {
-        'L': 2,
-        'R': 3,
-    }
-}
+import panoptic_slam.kitti.utils.config as kc
+from panoptic_slam.kitti.exceptions import KittiError  # , KittiTimeError, KittiGTError
 
 
 def get_cameras(mode=None, position=None):
 
-    mode_opts = _RAW_KITTI_CAMERA_CFG.keys()
+    mode_opts = kc.RAW_KITTI_CAMERA_CFG.keys()
 
     if mode is None:
         modes = mode_opts
-    elif mode.upper() not in _RAW_KITTI_CAMERA_CFG:
+    elif mode.upper() not in kc.RAW_KITTI_CAMERA_CFG:
         raise KeyError("Invalid Camera Mode entered ({}). Valid options are ({}) or None for all modes.".format(
             mode, mode_opts))
     else:
@@ -52,13 +27,13 @@ def get_cameras(mode=None, position=None):
     ids = []
     for m in modes:
 
-        camera_mode = _RAW_KITTI_CAMERA_CFG[m]
+        camera_mode = kc.RAW_KITTI_CAMERA_CFG[m]
         pos_opts = camera_mode.keys()
         positions = []
 
         if position is None:
             positions = pos_opts
-        elif position.upper() in _RAW_KITTI_CAMERA_CFG[m]:
+        elif position.upper() in kc.RAW_KITTI_CAMERA_CFG[m]:
             positions = [position.upper()]
 
         for p in positions:
@@ -68,32 +43,11 @@ def get_cameras(mode=None, position=None):
 
 
 def camera_is_grayscale(camera):
-    return camera in _RAW_KITTI_CAMERA_CFG['GRAY'].items()
+    return camera in kc.RAW_KITTI_CAMERA_CFG['GRAY'].items()
 
 
 def camera_is_color(camera):
-    return camera in _RAW_KITTI_CAMERA_CFG['COLOR'].items()
-
-
-_KITTI_STR = {
-    # KEY          Allowed Datatypes       Format String      Validation REGEX
-    'seq':        {'types': [int],         'fmt': "{:02d}",   'valid': r"([01][0-9])|(2[01])"},
-    'date':       {'types': [dt.datetime], 'fmt': "%Y_%m_%d", 'valid': r"(2011)_((09_((2[689])|(30)))|(10_03))"},
-    'drive':      {'types': [int],         'fmt': "{:04d}",   'valid': r"0[0-9]{3}"},
-    'raw camera': {'types': [int],         'fmt': "{:02d}",   'valid': r"0[0-3]"},
-    'raw image':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'raw oxts':   {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'rawe velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'raws velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'labels':     {'types': [int],         'fmt': "{:06d}}",  'valid': r"[0-9]{6}"},
-    # Directories
-    'raw camera directory': {'types': [int], 'fmt': "image_{:02d}",  'valid': r"image_0[0-3]"},
-    # Files
-    'raw image file': {'types': [int], 'fmt': "{:010d}.png", 'valid': r"[0-9]{10}\.png"},
-    'raw oxts file':  {'types': [int], 'fmt': "{:010d}.txt", 'valid': r"[0-9]{10}\.txt"},
-    'rawe velo file': {'types': [int], 'fmt': "{:010d}.txt", 'valid': r"[0-9]{10}\.txt"},
-    'raws velo file': {'types': [int], 'fmt': "{:010d}.bin", 'valid': r"[0-9]{10}\.bin"},
-}
+    return camera in kc.RAW_KITTI_CAMERA_CFG['COLOR'].items()
 
 
 def _validate_string(regex, string):
@@ -108,10 +62,10 @@ def _format_string(fmt, value):
 
 
 def format_kitti_str(value, str_type):
-    if str_type not in _KITTI_STR:
-        raise KeyError('Invalid Kitti string type ({}). Allowed ({}).'.format(str_type, _KITTI_STR.keys()))
+    if str_type not in kc.KITTI_STR:
+        raise KeyError('Invalid Kitti string type ({}). Allowed ({}).'.format(str_type, kc.KITTI_STR.keys()))
 
-    str_cfg = dict(_KITTI_STR[str_type])
+    str_cfg = dict(kc.KITTI_STR[str_type])
 
     # Format as string
     for t in str_cfg['types']:
@@ -213,14 +167,14 @@ def get_seq_dir(kitti_dir, seq):
 
 
 def get_raw_seq_info(seq, info):
-    if seq not in _KITTI_RAW_SEQ_MAPPING:
-        raise KittiError("Invalid sequence ({}). Valid values [{}].".format(seq, _KITTI_RAW_SEQ_MAPPING.keys()))
+    if seq not in kc.KITTI_RAW_SEQ_MAPPING:
+        raise KittiError("Invalid sequence ({}). Valid values [{}].".format(seq, kc.KITTI_RAW_SEQ_MAPPING.keys()))
 
-    if info not in _KITTI_RAW_SEQ_MAPPING[seq]:
+    if info not in kc.KITTI_RAW_SEQ_MAPPING[seq]:
         raise KeyError("Invalid Kitty Raw Mapping info ('{}'). Valid values {}.".format(
-            info, _KITTI_RAW_SEQ_MAPPING[seq].keys()))
+            info, kc.KITTI_RAW_SEQ_MAPPING[seq].keys()))
 
-    return _KITTI_RAW_SEQ_MAPPING[seq][info]
+    return kc.KITTI_RAW_SEQ_MAPPING[seq][info]
 
 
 def get_raw_seq_date(seq):
@@ -419,7 +373,7 @@ def parse_oxts_packet(oxts_str):
 def parse_image(camera, img_path):
     cv_image = cv2.imread(img_path)
 
-    if camera in _RAW_KITTI_CAMERA_CFG['GRAY'].values():
+    if camera in kc.RAW_KITTI_CAMERA_CFG['GRAY'].values():
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
     return cv_image
