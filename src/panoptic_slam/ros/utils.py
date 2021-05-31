@@ -168,7 +168,7 @@ def build_twiststamped_msg(header, linear_twist, angular_twist):
 
 
 def build_pcl2_msg(header, fields, scan, is_dense=True):
-    pcl2_msg =  pcl2.create_cloud(header, fields, scan)
+    pcl2_msg = pcl2.create_cloud(header, fields, scan)
     pcl2_msg.is_dense = is_dense
 
     return pcl2_msg

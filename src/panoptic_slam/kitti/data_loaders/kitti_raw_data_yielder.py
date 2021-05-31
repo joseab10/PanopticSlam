@@ -1,43 +1,27 @@
 """Provides class for loading and parsing KITTI Odometry data"""
 
-import datetime as dt
 from os import path
 
 import numpy as np
-import rospy
 
-from panoptic_slam.kitti.exceptions import KittiError, KittiGTError, KittiTimeError
+from panoptic_slam.kitti.data_loaders import KittiDataYielder
+from panoptic_slam.kitti.exceptions import KittiError
 import panoptic_slam.kitti.utils.utils as ku
-import panoptic_slam.ros.utils as ru
+import panoptic_slam.ros.transform_utils as tu
 
 
-class KittiRawDatasetYielder:
+class KittiRawDataYielder(KittiDataYielder):
 
     def __init__(self, kitti_dir, date, drive, sync=True, **kwargs):
-        if not path.isdir(kitti_dir):
-            raise OSError("Directory for KITTI dataset not found.\n{}".format(kitti_dir))
 
-        self.dir = kitti_dir
-
+        self._kitti_dir = kitti_dir
         self.date = date
         self.drive = drive
         self.sync = sync
 
-        self._s_date = ku.format_drive_date(date)
-        self._s_drive = ku.format_drive(drive)
+        data_dir = ku.get_raw_drive_dir(kitti_dir, date, drive, sync)
+        KittiDataYielder.__init__(self, data_dir, dataset_type="raw", **kwargs)
 
-        self.dir_drive = ku.get_raw_drive_dir(kitti_dir, date, drive, sync)
-
-        default_data_dirs = {
-            'calib': "..",
-            'oxts':  "oxts",
-            'velo':  "velodyne_points",
-            'cam0':  "image_00",
-            'cam1':  "image_01",
-            'cam2':  "image_02",
-            'cam3':  "image_03",
-        }
-        self._sub_dirs = {k: kwargs.get(k + "_dir""", d) for k, d in default_data_dirs.items()}
         self._data_subdir = kwargs.get("data_subdir", "data")
 
         self._calib_functions = {
@@ -48,35 +32,7 @@ class KittiRawDatasetYielder:
             'transforms': self._compute_transforms
         }
 
-        frame_step = kwargs.get("frame_step", None)
-
-        self.frame_start = kwargs.get("start_frame", None)
-        self.frame_end = kwargs.get("end_frame", None)
-        self.frame_step = 1 if frame_step is None else frame_step
-        self._is_frame_delimited = self.frame_start is not None and \
-            self.frame_end is not None and \
-            self.frame_step is not None
-
-        self._time_offset_conf = kwargs.get("time_offset", None)
-        self.time_offset = None
-
         self._calib = {}
-        self._loaded_timestamps = {}
-
-        timestamp_override = kwargs.get("timestamp_override", None)
-        self._timestamp_override = False
-        if timestamp_override is not None:
-            if isinstance(timestamp_override, (list, np.ndarray)):
-                self._loaded_timestamps['override'] = timestamp_override
-                self._timestamp_override = True
-            else:
-                raise TypeError("Invalid Timestamp Override type ({}, {}). Only a list of times is supported.")
-
-    def get_data_dir(self, key):
-        if key not in self._sub_dirs:
-            raise KittiError("Invalid directory key ({}). Valid values: [{}].".format(key, self._sub_dirs.keys()))
-
-        return path.join(self.dir_drive, self._sub_dirs[key])
 
     def _load_calib(self, calib_key):
         if calib_key not in self._calib_functions:
@@ -197,7 +153,7 @@ class KittiRawDatasetYielder:
         if key in transforms:
             return transforms[key]
         elif inv_key in transforms:
-            return ru.inv(transforms[inv_key])
+            return tu.inv(transforms[inv_key])
         else:
             raise KittiError("No transform between ({}) and ({}) found.".format(from_frame, to_frame))
 
@@ -209,105 +165,7 @@ class KittiRawDatasetYielder:
 
     def get_rigid_calib(self, calib_key):
         calib = self.get_calib(calib_key)
-        return ku.transform_from_rot_trans(calib['R'], calib['T'])
-
-    def _in_frame_range(self, frame):
-        if not self._is_frame_delimited:
-            return True
-
-        if self.frame_start is not None:
-            if frame < self.frame_start:
-                return False
-
-        if self.frame_end is not None:
-            if frame > self.frame_end:
-                return False
-
-        if self.frame_step is None:
-            return True
-
-        if self.frame_step == 1:
-            return True
-
-        return (frame - self.frame_start) % self.frame_step == 0
-
-    def frame_range(self, max_frame=None):
-        if max_frame is None:
-            max_frame = 100000
-
-        i = self.frame_start if self.frame_start is not None else 0
-        step = self.frame_step if self.frame_step is not None else 1
-
-        if self.frame_end is not None:
-            end = self.frame_end
-        else:
-            if isinstance(max_frame, list):
-                end = (len(max_frame) * step) + i
-            elif isinstance(max_frame, int):
-                end = max_frame
-            else:
-                raise TypeError("Invalid type for the max_frame parameter ({}).\
-                                 Only int and list supported.".format(type(max_frame), max_frame))
-
-        while i <= end:
-            yield i
-            i += step
-
-    def _offset_timestamp(self, timestamp):
-        if self._time_offset_conf is None:
-            return timestamp
-
-        if not self._time_offset_conf:
-            return timestamp
-
-        if self.time_offset is None:
-            if isinstance(self._time_offset_conf, (float, dt.timedelta, dt.datetime, rospy.Time)):
-                self.time_offset = self._time_offset_conf
-
-            elif isinstance(self._time_offset_conf, str):
-                if self._time_offset_conf.upper() == "FIRST":
-                    self.time_offset = timestamp
-
-                else:
-                    raise ValueError("Invalid time offset configuration string ({}).".format(self._time_offset_conf))
-            else:
-                raise ValueError("Invalid time offset configuration ({}).".format(self._time_offset_conf))
-
-        # Convert time offsets to timedelta objects
-        # Consider floats as seconds
-        if isinstance(self.time_offset, float):
-            self.time_offset = dt.timedelta(seconds=self.time_offset)
-
-        # Do the actual offsetting
-        if isinstance(self.time_offset, (dt.timedelta, dt.datetime)):
-            return timestamp - self.time_offset
-
-        raise TypeError("Invalid Time Offset type ({}, {}).".format(type(self.time_offset), self.time_offset))
-
-    def get_timestamps(self, data_key, force_load=False):
-        if self._timestamp_override and not force_load:
-            return self._loaded_timestamps['override']
-
-        if data_key in self._loaded_timestamps:
-            return self._loaded_timestamps[data_key]
-
-        timestamp_file = path.join(self.get_data_dir(data_key), "timestamps.txt")
-
-        if not path.isfile(timestamp_file):
-            raise KittiError("Timestamp file ({}) not found.".format(timestamp_file))
-
-        timestamps = []
-        with open(timestamp_file, 'r') as f:
-            for i, line in enumerate(f):
-                if self._in_frame_range(i):
-                    timestamps.append(self._offset_timestamp(ku.parse_raw_timestamp(line)))
-                if self.frame_end is not None:
-                    if i > self.frame_end:
-                        break
-
-        self._loaded_timestamps[data_key] = timestamps
-
-        return timestamps
+        return tu.transform_from_rot_trans(calib['R'], calib['T'])
 
     def set_timestamps(self, data_key, timestamps):
         if not isinstance(timestamps, list):
@@ -342,7 +200,7 @@ class KittiRawDatasetYielder:
             if origin is None:
                 origin = trans
 
-            transform = ku.transform_from_rot_trans(rot, trans - origin)
+            transform = tu.transform_from_rot_trans(rot, trans - origin)
 
             yield t, oxts, transform
 

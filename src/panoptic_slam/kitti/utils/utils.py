@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 
 import panoptic_slam.kitti.utils.config as kc
-from panoptic_slam.kitti.exceptions import KittiError  # , KittiTimeError, KittiGTError
+from panoptic_slam.kitti.exceptions import KittiError
+import panoptic_slam.ros.transform_utils as tu
 
 
 def get_cameras(mode=None, position=None):
@@ -87,15 +88,23 @@ def format_kitti_str(value, str_type):
         str_type, value, str_cfg['valid']))
 
 
-def format_seq(seq):
+def format_odo_seq(seq):
     return format_kitti_str(seq, "seq")
 
 
-def format_drive_date(date):
+def format_odo_labels(frame):
+    return format_kitti_str(frame, "odo labels")
+
+
+def format_odo_labels_file(frame):
+    return format_kitti_str(frame, "odo labels file")
+
+
+def format_raw_drive_date(date):
     return format_kitti_str(date, "date")
 
 
-def format_drive(drive):
+def format_raw_drive(drive):
     return format_kitti_str(drive, "drive")
 
 
@@ -137,7 +146,7 @@ def format_raw_extract_velo_file(frame):
 
 # Parsers
 
-def parse_timestamp(timestamp_str):
+def parse_odom_timestamp(timestamp_str):
     return dt.timedelta(seconds=float(timestamp_str))
 
 
@@ -156,7 +165,7 @@ def has_gt(seq):
 
 def get_seq_dir(kitti_dir, seq):
 
-    seq = format_seq(seq)
+    seq = format_odo_seq(seq)
 
     kitti_seq_dir = path.join(kitti_dir, 'sequences', seq)
 
@@ -198,7 +207,7 @@ def get_raw_seq_frame_range(seq):
 
 
 def get_raw_date_dir(kitti_dir, date):
-    date = format_drive_date(date)
+    date = format_raw_drive_date(date)
 
     kitti_raw_date_dir = path.join(kitti_dir, 'raw', date)
 
@@ -211,8 +220,8 @@ def get_raw_date_dir(kitti_dir, date):
 def get_raw_drive_dir(kitti_dir, date, drive, sync=True):
     kitti_raw_date_dir = get_raw_date_dir(kitti_dir, date)
 
-    drive = format_drive(drive)
-    date = format_drive_date(date)
+    drive = format_raw_drive(drive)
+    date = format_raw_drive_date(date)
 
     sync_dir = "sync" if sync else "extract"
     drive_dir = date + "_drive_" + drive + "_" + sync_dir
@@ -232,7 +241,7 @@ def get_raw_seq_date_dir(kitti_dir, seq):
 
 
 def get_raw_seq_dir(kitti_dir, seq, sync=True):
-    seq = format_seq(seq)
+    seq = format_odo_seq(seq)
 
     date = get_raw_seq_date(seq)
     drive = get_raw_seq_drive(seq)
@@ -277,55 +286,6 @@ def parse_calib_file(filepath):
     return data
 
 
-def transform_from_rot_trans(r, t):
-    """Transformation matrix from rotation matrix and translation vector."""
-
-    r = r.reshape(3, 3)
-    t = t.reshape(3, 1)
-
-    return np.vstack((np.hstack([r, t]), [0, 0, 0, 1]))
-
-
-def inv(transform_matrix):
-    """Inverse of a rigid body transformation matrix"""
-
-    r = transform_matrix[0:3, 0:3]
-    t = transform_matrix[0:3, 3]
-    t_inv = -1 * r.T.dot(t)
-    transform_inv = np.eye(4)
-    transform_inv[0:3, 0:3] = r.T
-    transform_inv[0:3, 3] = t_inv
-
-    return transform_inv
-
-
-def rotx(t):
-    """Rotation about the x-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[1,  0,  0],
-                     [0,  c, -s],
-                     [0,  s,  c]])
-
-
-def roty(t):
-    """Rotation about the y-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[c,  0,  s],
-                     [0,  1,  0],
-                     [-s, 0,  c]])
-
-
-def rotz(t):
-    """Rotation about the z-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[c, -s,  0],
-                     [s,  c,  0],
-                     [0,  0,  1]])
-
-
 OxtsPacket = namedtuple('OxtsPacket',
                         'lat, lon, alt, ' +
                         'roll, pitch, yaw, ' +
@@ -352,9 +312,9 @@ def pose_from_oxts_packet(packet, scale):
     t = np.array([tx, ty, tz])
 
     # Use the Euler angles to get the rotation matrix
-    rx = rotx(packet.roll)
-    ry = roty(packet.pitch)
-    rz = rotz(packet.yaw)
+    rx = tu.rotx(packet.roll)
+    ry = tu.roty(packet.pitch)
+    rz = tu.rotz(packet.yaw)
     r = rz.dot(ry.dot(rx))
 
     # Combine the translation and rotation into a homogeneous transform

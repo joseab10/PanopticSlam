@@ -84,7 +84,7 @@ def download_raw_data(download_dir, **kwargs):
     if drive not in date_set:
         raise KittiError("No URL configuration found for date {} and drive {}.".format(date, drive))
 
-    drive_s = date + "_drive_" + ku.format_drive(drive)
+    drive_s = date + "_drive_" + ku.format_raw_drive(drive)
     drive_set = date_set[drive]
 
     extension = kwargs.get("extension", "zip")

@@ -1,3 +1,4 @@
-from kitti_dataset_yielder import KittiDatasetYielder
-from kitti_raw_dataset_yielder import KittiRawDatasetYielder
+from kitti_data_yielder import KittiDataYielder
+from kitti_odom_data_yielder import KittiOdomDataYielder
+from kitti_raw_data_yielder import KittiRawDataYielder
 from kitti_data_downloader import download_raw_data, download_odom_dataset

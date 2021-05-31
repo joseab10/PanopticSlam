@@ -4,7 +4,7 @@ import numpy as np
 from sensor_msgs.msg import PointField
 from tqdm import tqdm
 
-from panoptic_slam.kitti.data_loaders import KittiRawDatasetYielder
+from panoptic_slam.kitti.data_loaders import KittiRawDataYielder
 import panoptic_slam.kitti.utils.utils as ku
 import panoptic_slam.ros.utils as ru
 
@@ -17,7 +17,7 @@ class RawKitti2RosBagConverter:
             raise TypeError("Invalid ROSBag object. {} passed.".format(type(bag)))
 
         self.bag = bag
-        self.kitti_loader = KittiRawDatasetYielder(kitti_dir, date, drive, sync, **kwargs)
+        self.kitti_loader = KittiRawDataYielder(kitti_dir, date, drive, sync, **kwargs)
 
         # Boolean Conversion Flags
         self._convert_static_tf = kwargs.get("convert_static_tf", False)

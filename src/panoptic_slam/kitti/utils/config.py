@@ -38,14 +38,15 @@ KITTI_STR = {
     'raw oxts':   {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
     'rawe velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
     'raws velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'labels':     {'types': [int],         'fmt': "{:06d}}",  'valid': r"[0-9]{6}"},
+    'odo labels': {'types': [int],         'fmt': "{:06d}",   'valid': r"[0-9]{6}"},
     # Directories
     'raw camera directory': {'types': [int], 'fmt': "image_{:02d}",  'valid': r"image_0[0-3]"},
     # Files
-    'raw image file': {'types': [int], 'fmt': "{:010d}.png", 'valid': r"[0-9]{10}\.png"},
-    'raw oxts file':  {'types': [int], 'fmt': "{:010d}.txt", 'valid': r"[0-9]{10}\.txt"},
-    'rawe velo file': {'types': [int], 'fmt': "{:010d}.txt", 'valid': r"[0-9]{10}\.txt"},
-    'raws velo file': {'types': [int], 'fmt': "{:010d}.bin", 'valid': r"[0-9]{10}\.bin"},
+    'raw image file':  {'types': [int], 'fmt': "{:010d}.png",  'valid': r"[0-9]{10}\.png"},
+    'raw oxts file':   {'types': [int], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
+    'rawe velo file':  {'types': [int], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
+    'raws velo file':  {'types': [int], 'fmt': "{:010d}.bin",  'valid': r"[0-9]{10}\.bin"},
+    'odo labels file': {'types': [int], 'fmt': "{:06d}.label", 'valid': r"[0-9]{6}\.label"}
 }
 
 # KITTI Raw Dataset download url

@@ -1,7 +1,7 @@
 import datetime as dt
 
 from raw_kitti_to_rosbag_converter import RawKitti2RosBagConverter
-from panoptic_slam.kitti.data_loaders import KittiDatasetYielder, KittiRawDatasetYielder
+from panoptic_slam.kitti.data_loaders import KittiOdomDataYielder, KittiRawDataYielder
 import panoptic_slam.kitti.utils.utils as ku
 
 
@@ -74,12 +74,12 @@ class RawKitti2LioSamSeqRosBagConverter:
                 extract_kwargs[key] = False
 
         # Load the timestamps from the odometry dataset (NOT Raw), to use them for the velodyne scans
-        self.odometry_loader = KittiDatasetYielder(self.kitti_dir, self.seq)
+        self.odometry_loader = KittiOdomDataYielder(self.kitti_dir, self.seq)
         self._odometry_timestamps = self.odometry_loader.get_timestamps()
         odom_kwargs['timestamp_override'] = self._odometry_timestamps
 
         # Compute the time offset so that the first frame in the sequence for the velodyne data corresponds to time 0.0
-        self.raw_loader = KittiRawDatasetYielder(self.kitti_dir, self.date, self.drive, sync=True)
+        self.raw_loader = KittiRawDataYielder(self.kitti_dir, self.date, self.drive, sync=True)
         self._raw_velo_timestamps = self.raw_loader.get_timestamps("velo")
         # Base the time offset on the first frame of the velodyne data
         # dataset_start_time = self._raw_velo_timestamps[0]
@@ -96,7 +96,7 @@ class RawKitti2LioSamSeqRosBagConverter:
         end_extract_frame = None
 
         if self._crop_start or self._crop_end:
-            self.raw_extract_loader = KittiRawDatasetYielder(self.kitti_dir, self.date, self.drive, sync=False)
+            self.raw_extract_loader = KittiRawDataYielder(self.kitti_dir, self.date, self.drive, sync=False)
             self._raw_extract_oxts_timestamps = self.raw_extract_loader.get_timestamps("oxts")
 
             for i, t in enumerate(self._raw_extract_oxts_timestamps):
