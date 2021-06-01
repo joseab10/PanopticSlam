@@ -59,6 +59,9 @@ def _format_string(fmt, value):
     if isinstance(value, dt.datetime):
         return value.strftime(fmt)
 
+    if isinstance(value, str):
+        return value
+
     return fmt.format(value)
 
 
@@ -69,10 +72,13 @@ def format_kitti_str(value, str_type):
     str_cfg = dict(kc.KITTI_STR[str_type])
 
     # Format as string
+    type_found = False
     for t in str_cfg['types']:
         if isinstance(value, t):
             value = _format_string(str_cfg['fmt'], value)
+            type_found = True
             break
+    if not type_found:
         raise TypeError("Invalid type ({}, {}) to format as ({}) string.".format(type(value), value, str_type))
 
     # Validate string
@@ -90,6 +96,14 @@ def format_kitti_str(value, str_type):
 
 def format_odo_seq(seq):
     return format_kitti_str(seq, "seq")
+
+
+def format_odo_velo(frame):
+    return format_kitti_str(frame, "odo velo")
+
+
+def format_odo_velo_file(frame):
+    return format_kitti_str(frame, "odo velo file")
 
 
 def format_odo_labels(frame):

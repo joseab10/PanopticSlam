@@ -34,6 +34,7 @@ class KittiDataYielder:
                 'cam2':  "image_02",
                 'cam3':  "image_03",
             }
+            self._timestamps_filename = "timestamps.txt"
         elif self._dataset_type.lower() == "odom":
             self._parse_timestamp = ku.parse_odom_timestamp
             default_data_dirs = {
@@ -47,6 +48,7 @@ class KittiDataYielder:
                 'cam2':  "image_02",
                 'cam3':  "image_03",
             }
+            self._timestamps_filename = "times.txt"
         else:
             raise ValueError("Invalid dataset_type defined. Valid options: [raw, odom].")
 
@@ -159,7 +161,7 @@ class KittiDataYielder:
         if data_key in self._loaded_timestamps:
             return self._loaded_timestamps[data_key]
 
-        timestamp_file = path.join(self.get_data_dir(data_key), "timestamps.txt")
+        timestamp_file = path.join(self.get_data_dir(data_key), self._timestamps_filename)
 
         if not path.isfile(timestamp_file):
             raise KittiError("Timestamp file ({}) not found.".format(timestamp_file))

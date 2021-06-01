@@ -30,23 +30,25 @@ RAW_KITTI_CAMERA_CFG = {
 # KITTI Strings formatting and validation
 KITTI_STR = {
     # KEY          Allowed Datatypes       Format String      Validation REGEX
-    'seq':        {'types': [int],         'fmt': "{:02d}",   'valid': r"([01][0-9])|(2[01])"},
-    'date':       {'types': [dt.datetime], 'fmt': "%Y_%m_%d", 'valid': r"(2011)_((09_((2[689])|(30)))|(10_03))"},
-    'drive':      {'types': [int],         'fmt': "{:04d}",   'valid': r"0[0-9]{3}"},
-    'raw camera': {'types': [int],         'fmt': "{:02d}",   'valid': r"0[0-3]"},
-    'raw image':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'raw oxts':   {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'rawe velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'raws velo':  {'types': [int],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
-    'odo labels': {'types': [int],         'fmt': "{:06d}",   'valid': r"[0-9]{6}"},
+    'seq':        {'types': [int, str],         'fmt': "{:02d}",   'valid': r"([01][0-9])|(2[01])"},
+    'date':       {'types': [dt.datetime, str], 'fmt': "%Y_%m_%d", 'valid': r"(2011)_((09_((2[689])|(30)))|(10_03))"},
+    'drive':      {'types': [int, str],         'fmt': "{:04d}",   'valid': r"0[0-9]{3}"},
+    'raw camera': {'types': [int, str],         'fmt': "{:02d}",   'valid': r"0[0-3]"},
+    'raw image':  {'types': [int, str],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
+    'raw oxts':   {'types': [int, str],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
+    'rawe velo':  {'types': [int, str],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
+    'raws velo':  {'types': [int, str],         'fmt': "{:010d}",  'valid': r"[0-9]{10}"},
+    'odo labels': {'types': [int, str],         'fmt': "{:06d}",   'valid': r"[0-9]{6}"},
+    'odo velo':   {'types': [int, str],         'fmt': "{:06d}",   'valid': r"[0-9]{6}"},
     # Directories
-    'raw camera directory': {'types': [int], 'fmt': "image_{:02d}",  'valid': r"image_0[0-3]"},
+    'raw camera directory': {'types': [int, str], 'fmt': "image_{:02d}",  'valid': r"image_0[0-3]"},
     # Files
-    'raw image file':  {'types': [int], 'fmt': "{:010d}.png",  'valid': r"[0-9]{10}\.png"},
-    'raw oxts file':   {'types': [int], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
-    'rawe velo file':  {'types': [int], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
-    'raws velo file':  {'types': [int], 'fmt': "{:010d}.bin",  'valid': r"[0-9]{10}\.bin"},
-    'odo labels file': {'types': [int], 'fmt': "{:06d}.label", 'valid': r"[0-9]{6}\.label"}
+    'raw image file':  {'types': [int, str], 'fmt': "{:010d}.png",  'valid': r"[0-9]{10}\.png"},
+    'raw oxts file':   {'types': [int, str], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
+    'rawe velo file':  {'types': [int, str], 'fmt': "{:010d}.txt",  'valid': r"[0-9]{10}\.txt"},
+    'raws velo file':  {'types': [int, str], 'fmt': "{:010d}.bin",  'valid': r"[0-9]{10}\.bin"},
+    'odo labels file': {'types': [int, str], 'fmt': "{:06d}.label", 'valid': r"[0-9]{6}\.label"},
+    'odo velo file':   {'types': [int, str], 'fmt': "{:06d}.bin",   'valid': r"[0-9]{6}\.bin"},
 }
 
 # KITTI Raw Dataset download url
