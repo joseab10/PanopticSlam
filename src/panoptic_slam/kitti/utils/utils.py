@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 import panoptic_slam.kitti.utils.config as kc
-from panoptic_slam.kitti.exceptions import KittiError
+from exceptions import KittiError
 import panoptic_slam.ros.transform_utils as tu
 
 

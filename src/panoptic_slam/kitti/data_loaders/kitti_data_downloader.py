@@ -5,7 +5,7 @@ from tqdm import tqdm
 from urllib2 import urlopen, URLError, HTTPError
 import zipfile
 
-from panoptic_slam.kitti.exceptions import KittiError
+from panoptic_slam.kitti.utils.exceptions import KittiError
 import panoptic_slam.kitti.utils.config as kc
 import panoptic_slam.kitti.utils.utils as ku
 

@@ -4,7 +4,7 @@ from os import path
 import numpy as np
 import rospy
 
-from panoptic_slam.kitti.exceptions import KittiError
+from panoptic_slam.kitti.utils.exceptions import KittiError
 from panoptic_slam.kitti.utils import utils as ku
 
 

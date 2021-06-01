@@ -5,7 +5,7 @@ from os import path
 import numpy as np
 
 from panoptic_slam.kitti.data_loaders import KittiDataYielder
-from panoptic_slam.kitti.exceptions import KittiGTError, KittiTimeError
+from panoptic_slam.kitti.utils.exceptions import KittiGTError, KittiTimeError
 import panoptic_slam.kitti.utils.utils as ku
 
 
