@@ -28,16 +28,16 @@ def parse_conversions(conv_arg):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="RawKitti2LioSAMSeqRosBAG")
 
-    parser.add_argument("-p", "--kitti_path", type=str,
+    parser.add_argument("-p", "--kitti_path", type=str, required=True,
                         help="Path to KITTI Dataset directory. \
                              Inside this directory must be the /sequences and /raw directories.")
-    parser.add_argument("-s", "--seq", type=int,
+    parser.add_argument("-s", "--seq", type=int, required=True,
                         help="KITTI Odometry dataset sequence. Valid values: (0-21).")
-    parser.add_argument("-o", "--output", type=str,
+    parser.add_argument("-o", "--output", type=str, required=True,
                         help="Path and filename to output ROSBag.")
     parser.add_argument("-c", "--convert", type=parse_conversions, default='static_tf,raw_imu,gps_fix,gps_vel,velodyne',
                         help="Comma-separated list of data to be converted. Can include one or more of \
-                        [static_tf, dynamic_tf, imu, raw_imu, gps-fix, gps_vel, cameras]")
+                        [static_tf, dynamic_tf, imu, raw_imu, gps_fix, gps_vel, velodyne, cameras]")
     parser.add_argument("--compression", type=parse_rosbag_compression, default="none", choices=["none", "bz2", "lz4"],
                         help="Compression algorithm for storing the output ROSBag.")
 

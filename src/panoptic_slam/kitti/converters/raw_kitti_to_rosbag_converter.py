@@ -204,7 +204,6 @@ class RawKitti2RosBagConverter:
 
             if self._convert_raw_imu:
                 ts = linear_ts[0] * i + linear_ts[1]
-                ts = ku.parse_timestamp(str(ts))
                 corrected_stamp = ru.stamp_to_rospy(ts)
                 topic, frame_id = self.get_topic_and_frame("imu_raw")
                 raw_imu_header = ru.build_header_msg(corrected_stamp, frame_id)

@@ -74,9 +74,10 @@ class RawKitti2LioSamSeqRosBagConverter:
                 extract_kwargs[key] = False
 
         # Load the timestamps from the odometry dataset (NOT Raw), to use them for the velodyne scans
-        self.odometry_loader = KittiOdomDataYielder(self.kitti_dir, self.seq)
-        self._odometry_timestamps = self.odometry_loader.get_timestamps()
-        odom_kwargs['timestamp_override'] = self._odometry_timestamps
+        if self._odometry_split:
+            self.odometry_loader = KittiOdomDataYielder(self.kitti_dir, self.seq)
+            self._odometry_timestamps = self.odometry_loader.get_timestamps(None)
+            odom_kwargs['timestamp_override'] = self._odometry_timestamps
 
         # Compute the time offset so that the first frame in the sequence for the velodyne data corresponds to time 0.0
         self.raw_loader = KittiRawDataYielder(self.kitti_dir, self.date, self.drive, sync=True)
@@ -112,22 +113,29 @@ class RawKitti2LioSamSeqRosBagConverter:
         if self._crop_end:
             extract_kwargs['end_frame'] = end_extract_frame
 
-        # Data converter from raw sync dataset using odometry timestamps (Mostly for velodyne data)
-        self._odom_converter = RawKitti2RosBagConverter(self.bag, self.kitti_dir, self.date, self.drive, sync=True,
-                                                        **odom_kwargs)
+        if self._odometry_split:
+            # Data converter from raw sync dataset using odometry timestamps (Mostly for velodyne data)
+            self._odom_converter = RawKitti2RosBagConverter(self.bag, self.kitti_dir, self.date, self.drive, sync=True,
+                                                            **odom_kwargs)
         # Data converter from raw sync dataset (For the rest of the messages)
         self._sync_converter = RawKitti2RosBagConverter(self.bag, self.kitti_dir, self.date, self.drive, sync=True,
                                                         **sync_kwargs)
-        # Data converter from raw extract dataset (Mostly for the IMU Messages)
-        self._extract_converter = RawKitti2RosBagConverter(self.bag, self.kitti_dir, self.date, self.drive, sync=False,
-                                                           **extract_kwargs)
+
+        if self._extract_split:
+            # Data converter from raw extract dataset (Mostly for the IMU Messages)
+            self._extract_converter = RawKitti2RosBagConverter(self.bag, self.kitti_dir, self.date, self.drive,
+                                                               sync=False, **extract_kwargs)
 
     def convert(self):
         print("\nConverting Raw Sync Data.")
         self._sync_converter.convert()
-        print("\nConverting Raw Sync Data with stamps from Odometry dataset.")
-        self._odom_converter.convert()
-        print("\nConverting Raw Extract Data.")
-        self._extract_converter.convert()
+
+        if self._odometry_split:
+            print("\nConverting Raw Sync Data with stamps from Odometry dataset.")
+            self._odom_converter.convert()
+
+        if self._extract_split:
+            print("\nConverting Raw Extract Data.")
+            self._extract_converter.convert()
 
         return self.bag
