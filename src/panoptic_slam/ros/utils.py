@@ -3,11 +3,13 @@ import datetime as dt
 
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped, TwistStamped, Transform
+import numpy as np
 import rosbag
 import rospy
 from std_msgs.msg import Header
 from sensor_msgs.msg import CameraInfo, Imu, NavSatFix, NavSatStatus
 import sensor_msgs.point_cloud2 as pcl2
+from sensor_msgs.msg import PointField
 from tf2_msgs.msg import TFMessage
 
 
@@ -188,3 +190,47 @@ def parse_rosbag_compression(compression_str):
 
     print("WARNING: Invalid ROSBag compression algorithm. Using 'none'.")
     return _ROSBAG_COMPRESSION['none']
+
+
+_PCL_FIELD_TYPES = {
+    PointField.INT8:    {'len': 1, 'dtype': np.int8},
+    PointField.UINT8:   {'len': 1, 'dtype': np.uint8},
+    PointField.INT16:   {'len': 2, 'dtype': np.int16},
+    PointField.UINT16:  {'len': 2, 'dtype': np.uint16},
+    PointField.INT32:   {'len': 4, 'dtype': np.int32},
+    PointField.UINT32:  {'len': 4, 'dtype': np.uint32},
+    PointField.FLOAT32: {'len': 4, 'dtype': np.float32},
+    PointField.FLOAT64: {'len': 8, 'dtype': np.float64},
+}
+
+
+def _pcl_field_info(pcl_field, info):
+    if isinstance(pcl_field, PointField):
+        pcl_field = pcl_field.datatype
+
+    if pcl_field in _PCL_FIELD_TYPES:
+        return _PCL_FIELD_TYPES[pcl_field][info]
+
+    raise KeyError("Invalid PCL Fields Type ({}).".format(pcl_field))
+
+
+def pcl2_field_len(pcl_field):
+    return _pcl_field_info(pcl_field, "len")
+
+
+def pcl2_field_type_to_np_dtype(pcl_field, str_rep=False):
+    data_type = _pcl_field_info(pcl_field, "dtype")
+
+    if str_rep:
+        data_type = np.dtype(data_type).str
+
+    if isinstance(pcl_field, PointField):
+        return pcl_field.name, data_type, pcl_field.count
+
+    return data_type
+
+
+def pcl2_msg_to_numpy(pcl2_msg):
+    pcl_field_types = [pcl2_field_type_to_np_dtype(f, str_rep=True) for f in pcl2_msg.fields]
+    return np.frombuffer(pcl2_msg.data, dtype=pcl_field_types)
+

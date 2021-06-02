@@ -181,9 +181,13 @@ include_directories(
 #)
 catkin_install_python(
         PROGRAMS
-            nodes/kitti_gt_panoptic_labeler
+            # ROS Nodes
+            nodes/kitti/kitti_gt_panoptic_labeler
+
+            # Misc Scripts
             scripts/kitti_tools/raw_kitti_2_liosam_seq_rosbag.py
             scripts/kitti_tools/raw_kitti_download.py
+            scripts/kitti_tools/kitti_data_analysis.py
         DESTINATION
             ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
