@@ -1,0 +1,10 @@
+<launch>
+
+    <arg name="dynamic_class_config_file" default="$(find panoptic_slam)/config/panoptic_slam/dynamic_classes.yaml"/>
+    <rosparam file="$(arg dynamic_class_config_file)" command="load"/>
+
+    <arg name="output" default="screen"/>
+
+    <node name="semantic_filter" pkg="panoptic_slam" type="semantic_pcl_filter" output="$(arg output)"/>
+
+</launch>

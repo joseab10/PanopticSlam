@@ -183,6 +183,7 @@ catkin_install_python(
         PROGRAMS
             # ROS Nodes
             nodes/kitti/kitti_gt_panoptic_labeler
+            nodes/panoptic_slam/semantic_pcl_filter
 
             # Misc Scripts
             scripts/kitti_tools/raw_kitti_2_liosam_seq_rosbag.py
