@@ -1,0 +1,31 @@
+dynamic_classes:
+  # -  0 # Unlabeled
+  -  1 # Outlier
+  # Vehicles
+  -  10 # Car
+  -  11 # Bicycle
+  -  13 # Bus
+  -  15 # Motorcycle
+  -  16 # On-Rails
+  -  18 # Truck
+  -  20 # Other-Vehicle
+
+  # Moving Vehicles
+  - 252 # Moving-Car
+  - 257 # Moving-Bus
+  - 256 # Moving-On-Rails
+  - 258 # Moving-Truck
+  - 259 # Moving-Other-Vehicle
+
+  # People
+  -  30 # Person
+  -  31 # Bicyclist
+  -  32 # Motorcyclist
+
+    # Moving People
+  - 254 # Moving-Person
+  - 253 # Moving-Bicyclist
+  - 255 # Moving-Motorcyclist
+
+  # Vegetation
+  #-  70 # Vegetation
