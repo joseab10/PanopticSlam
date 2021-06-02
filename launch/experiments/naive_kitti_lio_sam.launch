@@ -1,0 +1,38 @@
+<launch>
+
+    <arg name="kitti_dataset_path" default="$(find panoptic_slam)/../../../dat/Kitti/"/>
+    <arg name="kitti_sequence" default="8"/>
+    <arg name="bag_file" default="raw_kitti.bag"/>
+
+    <arg name="sim_pause" default="true"/>
+    <arg name="sim_quiet" default="false"/>
+
+    <arg name="output" default="screen"/>
+
+    <arg name="filter_point_cloud" default="true"/>
+
+    <arg name="dynamic_class_config_file" default="$(find panoptic_slam)/config/panoptic_slam/dynamic_classes.yaml"/>
+
+    <!-- Parameters -->
+    <include file="$(find panoptic_slam)/launch/experiments/vanilla_kitti_lio_sam.launch">
+        <arg name="kitti_dataset_path"   value="$(arg kitti_dataset_path)"/>
+        <arg name="kitti_sequence"       value="$(arg kitti_sequence)"/>
+        <arg name="bag_file"             value="$(arg bag_file)"/>
+        <arg name="sim_pause"            value="$(arg sim_pause)"/>
+        <arg name="sim_quiet"            value="$(arg sim_quiet)"/>
+        <arg name="filter_point_cloud"   value="$(arg filter_point_cloud)"/>
+        <arg name="output"               value="$(arg output)"/>
+    </include>
+
+    <include file="$(find panoptic_slam)/launch/nodes/kitti/kitti_gt_panoptic_labeler.launch">
+        <arg name="kitti_dataset_path"   value="$(arg kitti_dataset_path)"/>
+        <arg name="kitti_sequence"       value="$(arg kitti_sequence)"/>
+        <arg name="output" value="$(arg output)"/>
+    </include>
+
+    <include file="$(find panoptic_slam)/launch/nodes/panoptic_slam/semantic_filter.launch">
+        <arg name="dynamic_class_config_file" value="$(arg dynamic_class_config_file)"/>
+        <arg name="output" value="$(arg output)"/>
+    </include>
+
+</launch>

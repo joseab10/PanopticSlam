@@ -1,0 +1,14 @@
+<launch>
+
+    <arg name="project" default="lio_sam"/>
+    <arg name="output" default="screen"/>
+    <arg name="filter_point_cloud" default="false"/>
+    
+    <node pkg="$(arg project)" type="$(arg project)_imuPreintegration" name="$(arg project)_imuPreintegration"    output="$(arg output)" 	respawn="true"/>
+    <node pkg="$(arg project)" type="$(arg project)_imageProjection"   name="$(arg project)_imageProjection"      output="$(arg output)"     respawn="true">
+            <remap to="points_raw" from="points_filtered" if="$(arg filter_point_cloud)"/>
+    </node>
+    <node pkg="$(arg project)" type="$(arg project)_featureExtraction" name="$(arg project)_featureExtraction"    output="$(arg output)"     respawn="true"/>
+    <node pkg="$(arg project)" type="$(arg project)_mapOptmization"    name="$(arg project)_mapOptmization"       output="$(arg output)"     respawn="true"/>
+    
+</launch>
