@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from argparse import ArgumentParser
 
 from panoptic_slam.kitti.data_loaders import download_raw_data

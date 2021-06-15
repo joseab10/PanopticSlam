@@ -1,2 +1,3 @@
+from odo_kitti_to_rosbag_converter import OdoKitti2RosBagConverter
 from raw_kitti_to_rosbag_converter import RawKitti2RosBagConverter
 from raw_kitti_to_liosam_seq_rosbag_converter import RawKitti2LioSamSeqRosBagConverter
