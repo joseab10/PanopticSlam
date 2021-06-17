@@ -158,6 +158,13 @@ def format_raw_extract_velo_file(frame):
     return format_kitti_str(frame, "rawe velo file")
 
 
+def format_poses_file(seq, odom=False):
+    if not odom:
+        return format_kitti_str(None, "poses sem file")
+
+    return format_kitti_str(seq, "poses odo file")
+
+
 # Parsers
 
 def parse_odom_timestamp(timestamp_str):

@@ -47,6 +47,8 @@ class KittiDataYielder:
                 'cam1':  "image_01",
                 'cam2':  "image_02",
                 'cam3':  "image_03",
+                'pose_odo': path.join("..", "..", "odometry_poses"),
+                'pose_sem': ".",
             }
             self._timestamps_filename = "times.txt"
         else:

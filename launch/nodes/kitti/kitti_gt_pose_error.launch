@@ -1,0 +1,13 @@
+<launch>
+
+    <arg name="kitti_dataset_path" default="$(find panoptic_slam)/../../../dat/Kitti/"/>
+    <arg name="kitti_sequence" default="8"/>
+
+    <arg name="output" default="screen"/>
+
+    <node name="gt_pose_error" pkg="panoptic_slam" type="kitti_gt_pose_error" output="$(arg output)">
+        <param name="kitti_dataset_path" value="$(arg kitti_dataset_path"/>
+        <param name="kitti_sequence" value="$(arg kitti_sequence)"/>
+    </node>
+
+</launch>

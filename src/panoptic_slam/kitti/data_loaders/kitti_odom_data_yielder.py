@@ -7,6 +7,7 @@ import numpy as np
 from panoptic_slam.kitti.data_loaders import KittiDataYielder
 from panoptic_slam.kitti.utils.exceptions import KittiGTError, KittiTimeError
 import panoptic_slam.kitti.utils.utils as ku
+import panoptic_slam.ros.transform_utils as tu
 
 
 class KittiOdomDataYielder(KittiDataYielder):
@@ -53,3 +54,26 @@ class KittiOdomDataYielder(KittiDataYielder):
 
         for t, i in zip(velo_timestamps, self.frame_range(velo_timestamps)):
             yield t, self.get_velo_by_index(i)
+
+    def get_poses(self, odom=False):
+
+        if not ku.has_gt(self.seq):
+            raise KittiGTError("KITTI Sequence {} has no ground truth poses.".format(self.seq))
+
+        path_key = "pose_sem"
+        if odom:
+            path_key = "pose_odo"
+
+        pose_dir = self.get_data_dir(path_key)
+        pose_file = ku.format_poses_file(self.seq, odom=odom)
+
+        pose_file = path.join(pose_dir, pose_file)
+
+        poses = np.loadtxt(pose_file)
+
+        tf = [tu.transform_from_rot_trans(t[3:], t[:3]) for t in poses]
+
+        return tf
+
+
+

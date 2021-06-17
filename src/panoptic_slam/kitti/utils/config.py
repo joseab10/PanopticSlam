@@ -49,6 +49,8 @@ KITTI_STR = {
     'raws velo file':  {'types': [int, str], 'fmt': "{:010d}.bin",  'valid': r"[0-9]{10}\.bin"},
     'odo labels file': {'types': [int, str], 'fmt': "{:06d}.label", 'valid': r"[0-9]{6}\.label"},
     'odo velo file':   {'types': [int, str], 'fmt': "{:06d}.bin",   'valid': r"[0-9]{6}\.bin"},
+    'poses odo file':  {'types': [int, str], 'fmt': "{:02d}.txt",   'valid': r"(0[0-9])(10)\.txt"},
+    'poses sem file':  {'types': [object],   'fmt': "poses.txt",    'valid': r"poses\.txt"},
 }
 
 # KITTI Raw Dataset download url
