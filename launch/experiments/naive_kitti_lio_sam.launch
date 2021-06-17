@@ -12,7 +12,9 @@
 
     <arg name="filter_point_cloud" default="true"/>
 
-    <arg name="dynamic_class_config_file" default="$(find panoptic_slam)/config/panoptic_slam/dynamic_classes.yaml"/>
+    <arg name="dynamic_class_config_file" default="$(find panoptic_slam)/config/kitti/dynamic_classes.yaml"/>
+
+    <arg name="rviz_cfg" default="$(find panoptic_slam)/config/rviz/panoptic_rviz.rviz"/>
 
     <!-- Parameters -->
     <include file="$(find panoptic_slam)/launch/experiments/vanilla_kitti_lio_sam.launch">
@@ -24,6 +26,7 @@
         <arg name="sim_rate"             value="$(arg sim_rate)"/>
         <arg name="filter_point_cloud"   value="$(arg filter_point_cloud)"/>
         <arg name="output"               value="$(arg output)"/>
+        <arg name="rviz_cfg"             value="$(arg rviz_cfg)"/>
     </include>
 
     <include file="$(find panoptic_slam)/launch/nodes/kitti/kitti_gt_panoptic_labeler.launch">

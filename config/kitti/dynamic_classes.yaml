@@ -27,5 +27,6 @@ dynamic_classes:
   - 253 # Moving-Bicyclist
   - 255 # Moving-Motorcyclist
 
+  - 40 # Road (test)
   # Vegetation
   #-  70 # Vegetation

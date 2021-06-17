@@ -19,6 +19,8 @@
 
     <arg name="filter_point_cloud" default="false"/>
 
+    <arg name="rviz_cfg" default="$(find panoptic_slam)/config/rviz/rviz.rviz"/>
+
     <!-- Parameters -->
     <param name="use_sim_time" value="true"/>
     <rosparam file="$(find panoptic_slam)/config/lio_sam/kitti_params.yaml" command="load" />
@@ -46,6 +48,8 @@
     <include file="$(find lio_sam)/launch/include/module_navsat.launch" />
 
     <!--- Run Rviz-->
-    <include file="$(find lio_sam)/launch/include/module_rviz.launch" />
+    <include file="$(find panoptic_slam)/launch/debugging/module_rviz.launch">
+        <arg name="cfg" value="$(arg rviz_cfg)"/>
+    </include>
 
 </launch>

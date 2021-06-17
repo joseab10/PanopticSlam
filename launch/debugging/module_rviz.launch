@@ -1,0 +1,8 @@
+<launch>
+
+    <arg name="cfg" default="$(find panoptic_slam)/config/rviz/rviz.rviz"/>
+
+    <!--- Run Rviz-->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg cfg)" />
+
+</launch>
