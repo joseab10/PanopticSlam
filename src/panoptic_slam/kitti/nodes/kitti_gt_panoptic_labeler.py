@@ -12,6 +12,7 @@ from panoptic_slam.kitti.utils.exceptions import KittiError
 import panoptic_slam.kitti.utils.utils as ku
 from panoptic_slam.ros.utils import stamp_to_rospy, build_pcl2_msg
 import panoptic_slam.ros.utils as ru
+import panoptic_slam.numpy_utils as nu
 
 
 class KittiGTPanopticLabeler:
@@ -54,23 +55,25 @@ class KittiGTPanopticLabeler:
                 class_labels, instance_labels = self._kitti.get_labels_by_index(frame_index)
 
             except KittiError as e:
-                class_labels = instance_labels = np.zeros(point_len)
+                class_labels = instance_labels = np.zeros(point_len, dtype=np.int16)
                 rospy.logwarn(e.message +
                               "Publishing 0 (unlabeled) class and instance labels for scan at time {}.".format(ts))
         else:
-            class_labels = instance_labels = np.zeros()
+            class_labels = instance_labels = np.zeros(point_len, dtype=np.int16)
             rospy.logwarn("No scan at time {}. Publishing 0 (unlabeled) class and instance labels.".format(ts))
 
-        labels_type = np.dtype([("class", np.int16, 1), ("instance", np.int16, 1)])
-        labels = np.zeros(point_len, dtype=labels_type)
-        labels["class"] = class_labels
-        labels['instance'] = instance_labels
+        #labels_type = np.dtype([("class", np.int16, 1), ("instance", np.int16, 1)])
+        #labels = np.empty(point_len, dtype=labels_type)
+        #labels["class"] = class_labels
+        #labels['instance'] = instance_labels
 
-        scan = rfn.merge_arrays((scan, labels), flatten=True)
+        #scan = rfn.merge_arrays((scan, labels), flatten=True) # TOO SLOOOOOW
+        #scan.insert(labels)
+        #nscan.insert()
+        scan = nu.join_arrays([scan, class_labels, instance_labels])
 
         lbl_pcl_msg = build_pcl2_msg(msg.header, msg.fields, scan, is_dense=True)
 
         self._labeled_pcl_publisher.publish(lbl_pcl_msg)
-
 
 

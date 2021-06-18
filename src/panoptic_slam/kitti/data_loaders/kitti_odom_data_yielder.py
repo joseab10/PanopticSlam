@@ -33,8 +33,8 @@ class KittiOdomDataYielder(KittiDataYielder):
             raise OSError("Requested label file not found.\n{}".format(label_file))
 
         label = np.fromfile(label_file, dtype=np.int32)
-        label_class = np.bitwise_and(label, 0xFFFF)
-        label_instance = np.right_shift(label, 16)
+        label_class = np.bitwise_and(label, 0xFFFF).astype(np.dtype([("class", np.int16, 1)]))
+        label_instance = np.right_shift(label, 16).astype(np.dtype([("instance", np.int16, 1)]))
 
         return label_class, label_instance
 
