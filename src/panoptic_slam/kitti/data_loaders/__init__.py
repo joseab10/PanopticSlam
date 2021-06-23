@@ -3,3 +3,4 @@ from kitti_data_yielder import KittiDataYielder
 from kitti_odom_data_yielder import KittiOdomDataYielder
 from kitti_raw_data_yielder import KittiRawDataYielder
 from kitti_data_downloader import download_raw_data, download_odom_dataset
+from kitti_gt_poses_loader import KittiGTPosesLoader

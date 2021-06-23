@@ -189,6 +189,7 @@ catkin_install_python(
             scripts/kitti_tools/raw_kitti_2_liosam_seq_rosbag.py
             scripts/kitti_tools/raw_kitti_download.py
             scripts/kitti_tools/kitti_data_analysis.py
+            scripts/kitti_tools/kitti_gt_poses_to_pcd.py
         DESTINATION
             ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
