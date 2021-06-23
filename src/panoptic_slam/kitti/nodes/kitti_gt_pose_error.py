@@ -3,17 +3,15 @@ from collections import OrderedDict
 
 # Third Party Libraries
 import numpy as np
-from numpy.lib import recfunctions as rfn
 import rospy
 from nav_msgs.msg import Path
 from tf import transformations as trans
 
 # Project Libraries
 from panoptic_slam.kitti.data_loaders import KittiOdomDataYielder, KittiRawDataYielder
-from panoptic_slam.kitti.utils.exceptions import KittiError
 import panoptic_slam.kitti.utils.utils as ku
-from panoptic_slam.ros.utils import stamp_to_rospy, build_pcl2_msg
-import panoptic_slam.ros.transform_utils as tu
+from panoptic_slam.ros.utils import stamp_to_rospy
+import panoptic_slam.geometry.transforms.utils as tu
 
 
 class KittiGTPoseError:
@@ -69,7 +67,3 @@ class KittiGTPoseError:
 
         self._poses.append(empty_poses)
         self._ts_mismatch_ns.append(ts_mismatch)
-
-
-
-

@@ -7,7 +7,7 @@ import numpy as np
 from panoptic_slam.kitti.data_loaders import KittiDataYielder
 from panoptic_slam.kitti.utils.exceptions import KittiError
 import panoptic_slam.kitti.utils.utils as ku
-import panoptic_slam.ros.transform_utils as tu
+import panoptic_slam.geometry.transforms.utils as tu
 
 
 class KittiRawDataYielder(KittiDataYielder):

@@ -48,3 +48,27 @@ def rotz(t):
     return np.array([[c, -s,  0],
                      [s,  c,  0],
                      [0,  0,  1]])
+
+
+def normalize_angles(angles):
+    """
+    Normalizes angles to range (-pi, pi]
+
+    :param angles: (np.ndarray) Array of angles (in radians).
+    :return: (np.ndarray) Array of angles normalized to (-pi, pi].
+    """
+    return np.where(angles > np.pi, angles - 2 * np.pi, angles)
+
+
+def join_arrays(arrays):
+    sizes = np.array([a.itemsize for a in arrays])
+    offsets = np.r_[0, sizes.cumsum()]
+    n = len(arrays[0])
+    joint = np.empty((n, offsets[-1]), dtype=np.uint8)
+
+    for a, size, offset in zip(arrays, sizes, offsets):
+        joint[:, offset:offset + size] = a.view(np.uint8).reshape(n, size)
+
+    dtype = sum((a.dtype.descr for a in arrays), [])
+
+    return joint.ravel().view(dtype)

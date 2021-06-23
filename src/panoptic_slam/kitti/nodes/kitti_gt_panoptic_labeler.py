@@ -2,7 +2,6 @@
 
 # Third Party Libraries
 import numpy as np
-from numpy.lib import recfunctions as rfn
 import rospy
 from sensor_msgs.msg import PointCloud2, PointField
 
@@ -10,9 +9,9 @@ from sensor_msgs.msg import PointCloud2, PointField
 from panoptic_slam.kitti.data_loaders import KittiOdomDataYielder, KittiRawDataYielder
 from panoptic_slam.kitti.utils.exceptions import KittiError
 import panoptic_slam.kitti.utils.utils as ku
-from panoptic_slam.ros.utils import stamp_to_rospy, build_pcl2_msg
+from panoptic_slam.ros.utils import build_pcl2_msg
 import panoptic_slam.ros.utils as ru
-import panoptic_slam.numpy_utils as nu
+import panoptic_slam.geometry.transforms.utils as tu
 
 
 class KittiGTPanopticLabeler:
@@ -62,10 +61,8 @@ class KittiGTPanopticLabeler:
             rospy.logwarn(e.message +
                           "Publishing 0 (unlabeled) class and instance labels for scan at time {}.".format(ts))
 
-        scan = nu.join_arrays([scan, class_labels, instance_labels])
+        scan = tu.join_arrays([scan, class_labels, instance_labels])
 
         lbl_pcl_msg = build_pcl2_msg(msg.header, msg.fields, scan, is_dense=True)
 
         self._labeled_pcl_publisher.publish(lbl_pcl_msg)
-
-
