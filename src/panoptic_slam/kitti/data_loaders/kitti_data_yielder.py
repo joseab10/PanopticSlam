@@ -6,6 +6,7 @@ import rospy
 
 from panoptic_slam.kitti.utils.exceptions import KittiError
 from panoptic_slam.kitti.utils import utils as ku
+from panoptic_slam.kitti.data_loaders import KittiTimestamps
 
 
 class KittiDataYielder:
@@ -74,7 +75,7 @@ class KittiDataYielder:
         self._timestamp_override = False
         if timestamp_override is not None:
             if isinstance(timestamp_override, (list, np.ndarray)):
-                self._loaded_timestamps['override'] = timestamp_override
+                self._loaded_timestamps['override'] = KittiTimestamps(timestamp_override)
                 self._timestamp_override = True
             else:
                 raise TypeError("Invalid Timestamp Override type ({}, {}). Only a list of times is supported.")
@@ -177,9 +178,9 @@ class KittiDataYielder:
                     if i > self.frame_end:
                         break
 
-        self._loaded_timestamps[data_key] = timestamps
+        self._loaded_timestamps[data_key] = KittiTimestamps(timestamps)
 
-        return timestamps
+        return self._loaded_timestamps[data_key]
 
     def get_data_dir(self, key):
         if key not in self._sub_dirs:

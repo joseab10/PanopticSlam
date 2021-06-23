@@ -1,3 +1,4 @@
+from kitti_timestamps import KittiTimestamps, TimeMatching
 from kitti_data_yielder import KittiDataYielder
 from kitti_odom_data_yielder import KittiOdomDataYielder
 from kitti_raw_data_yielder import KittiRawDataYielder

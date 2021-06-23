@@ -35,8 +35,7 @@ class KittiGTPanopticLabeler:
 
         self._raw_kitti = KittiRawDataYielder(self._kitti_dir, date, drive, sync=True,
                                               start_frame=start_frame, end_frame=end_frame)
-        timestamps = self._raw_kitti.get_timestamps("velo")
-        self._timestamp_table = {stamp_to_rospy(t): i for i, t in enumerate(timestamps)}
+        self._timestamps = self._raw_kitti.get_timestamps("velo")
 
     def _pcl_callback(self, msg):
 
@@ -49,27 +48,20 @@ class KittiGTPanopticLabeler:
         msg.fields.append(PointField("class", field_offset, PointField.UINT16, 1))
         msg.fields.append(PointField("instance", field_offset + 2, PointField.UINT16, 1))
 
-        if ts in self._timestamp_table:
-            try:
-                frame_index = self._timestamp_table[ts]
-                class_labels, instance_labels = self._kitti.get_labels_by_index(frame_index)
+        frame_index, time_error = self._timestamps.get_frame_id(ts)
 
-            except KittiError as e:
-                class_labels = instance_labels = np.zeros(point_len, dtype=np.int16)
-                rospy.logwarn(e.message +
-                              "Publishing 0 (unlabeled) class and instance labels for scan at time {}.".format(ts))
-        else:
-            class_labels = instance_labels = np.zeros(point_len, dtype=np.int16)
+        class_labels = instance_labels = np.zeros(point_len, dtype=np.int16)
+
+        if frame_index is None:
             rospy.logwarn("No scan at time {}. Publishing 0 (unlabeled) class and instance labels.".format(ts))
 
-        #labels_type = np.dtype([("class", np.int16, 1), ("instance", np.int16, 1)])
-        #labels = np.empty(point_len, dtype=labels_type)
-        #labels["class"] = class_labels
-        #labels['instance'] = instance_labels
+        try:
+            class_labels, instance_labels = self._kitti.get_labels_by_index(frame_index)
 
-        #scan = rfn.merge_arrays((scan, labels), flatten=True) # TOO SLOOOOOW
-        #scan.insert(labels)
-        #nscan.insert()
+        except KittiError as e:
+            rospy.logwarn(e.message +
+                          "Publishing 0 (unlabeled) class and instance labels for scan at time {}.".format(ts))
+
         scan = nu.join_arrays([scan, class_labels, instance_labels])
 
         lbl_pcl_msg = build_pcl2_msg(msg.header, msg.fields, scan, is_dense=True)
