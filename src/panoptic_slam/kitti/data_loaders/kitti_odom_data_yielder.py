@@ -5,9 +5,8 @@ from os import path
 import numpy as np
 
 from panoptic_slam.kitti.data_loaders import KittiDataYielder
-from panoptic_slam.kitti.utils.exceptions import KittiGTError, KittiTimeError
+from panoptic_slam.kitti.utils.exceptions import KittiGTError
 import panoptic_slam.kitti.utils.utils as ku
-import panoptic_slam.ros.transform_utils as tu
 
 
 class KittiOdomDataYielder(KittiDataYielder):
@@ -74,6 +73,3 @@ class KittiOdomDataYielder(KittiDataYielder):
         poses = poses.reshape((-1, 4, 4))
 
         return poses
-
-
-
