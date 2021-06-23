@@ -68,12 +68,12 @@ class KittiOdomDataYielder(KittiDataYielder):
         pose_file = ku.format_poses_file(self.seq, odom=odom)
 
         pose_file = path.join(pose_dir, pose_file)
-
         poses = np.loadtxt(pose_file)
+        # Add projection vector to complete (4x4) homogeneous transformation matrix
+        poses = np.hstack([poses, np.zeros((len(poses), 3)), np.ones((len(poses), 1))])
+        poses = poses.reshape((-1, 4, 4))
 
-        tf = [tu.transform_from_rot_trans(t[3:], t[:3]) for t in poses]
-
-        return tf
+        return poses
 
 
 
