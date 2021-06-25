@@ -21,7 +21,8 @@ if __name__ == "__main__":
 
     # TODO: add time_matching, match_alg and n_match_positions arguments
 
-    parser.add_argument("-o", "--output_dir", default=None)
+    parser.add_argument("-o", "--output_dir", default=None,
+                        help="Path to directory where output files will be saved.")
 
     args = parser.parse_args()
     kwargs = {
