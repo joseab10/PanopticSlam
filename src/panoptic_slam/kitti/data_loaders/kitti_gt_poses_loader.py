@@ -1,9 +1,9 @@
 import numpy as np
-import pypcd
-from scipy.spatial.transform.rotation import Rotation as R
+from scipy.spatial.transform.rotation import Rotation
 
 from panoptic_slam.kitti.data_loaders import KittiOdomDataYielder, KittiRawDataYielder
 import panoptic_slam.kitti.utils.utils as ku
+from panoptic_slam.geometry.point_cloud.utils import save_poses_as_pcd
 
 
 class KittiGTPosesLoader:
@@ -17,6 +17,8 @@ class KittiGTPosesLoader:
         end_frame = ku.get_raw_seq_end_frame(seq)
         kwargs['start_frame'] = start_frame
         kwargs['end_frame'] = end_frame
+        transform_to_velo_frame = kwargs.get("transform_to_velo_frame", True)
+
         self.raw_kitti = KittiRawDataYielder(kitti_dir, date, drive, **kwargs)
         self._odom_poses = kwargs.get("odom_poses", False)
 
@@ -24,16 +26,17 @@ class KittiGTPosesLoader:
         self._timestamps = self.raw_kitti.get_timestamps("velo")
 
         # Load poses from Kitti Odometry dataset (either the Semantic or Odometry poses, depending on odom_poses)
-        poses = np.array(self.kitti.get_poses(self._odom_poses))
+        self._poses = np.array(self.kitti.get_poses(self._odom_poses))
 
-        # Load calibration and transform poses to velodyne reference frame for easier comparison with LIO-SAM poses
-        cam1tovelo_tf = self.raw_kitti.get_transform("velo", "cam1")
-        self._poses = np.matmul(cam1tovelo_tf, poses)
+        if transform_to_velo_frame:
+            # Load calibration and transform poses to velodyne reference frame for easier comparison with LIO-SAM poses
+            cam1tovelo_tf = self.raw_kitti.get_transform("velo", "cam1")
+            self._poses = np.matmul(cam1tovelo_tf, self._poses)
 
         # Extract positions and rotations as RPY angles
-        self._positions = poses[:, :3, 3:].reshape(-1, 3)
-        rot = poses[:, :3, :3]
-        rot = R.from_dcm(rot)
+        self._positions = self._poses[:, :3, 3:].reshape(-1, 3)
+        rot = self._poses[:, :3, :3]
+        rot = Rotation.from_dcm(rot)
         self._orientations = rot.as_euler("xyz", degrees=False)
 
     def get_timestamps(self):
@@ -49,30 +52,4 @@ class KittiGTPosesLoader:
         return self._orientations
 
     def save_as_pcd(self, pcd_file):
-
-        num_poses = len(self._timestamps)
-
-        # Define PCL Fields
-        pcl_type = np.dtype([("x", np.float32, 1), ("y", np.float32, 1), ("z", np.float32, 1),
-                             ("intensity", np.float32, 1),
-                             ("roll", np.float32, 1), ("pitch", np.float32, 1), ("yaw", np.float32, 1),
-                             ("time", np.float64, 1)])
-
-        # Build Point Cloud structure
-        pcl_array = np.empty(num_poses, dtype=pcl_type)
-        pcl_array['x'] = self._positions[:, 0]
-        pcl_array['y'] = self._positions[:, 1]
-        pcl_array['z'] = self._positions[:, 2]
-        pcl_array['intensity'] = np.arange(num_poses)
-        pcl_array['roll'] = self._orientations[:, 0]
-        pcl_array['pitch'] = self._orientations[:, 1]
-        pcl_array['yaw'] = self._orientations[:, 2]
-        pcl_array['time'] = np.asarray(self._timestamps) * 1e-9  # Save timestamps as floats in seconds
-        pcl = pypcd.PointCloud.from_array(pcl_array)
-
-        pypcd.save_point_cloud(pcl, pcd_file)
-
-
-if __name__ == "__main__":
-    converter = KittiGTPosesLoader("/home/jose/Documents/Master_Thesis/dat/Kitti", 8)
-    converter.save_as_pcd("/home/jose/Downloads/SEQ08_NAIVE/gt_trajectory.pcd")
+        save_poses_as_pcd(pcd_file, self._positions, self._orientations, None, self._timestamps)
