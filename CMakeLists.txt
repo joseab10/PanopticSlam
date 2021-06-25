@@ -190,6 +190,7 @@ catkin_install_python(
             scripts/kitti_tools/raw_kitti_download.py
             scripts/kitti_tools/kitti_data_analysis.py
             scripts/kitti_tools/kitti_gt_poses_to_pcd.py
+            scripts/kitti_tools/kitti_pcd_pose_errors.py
         DESTINATION
             ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
