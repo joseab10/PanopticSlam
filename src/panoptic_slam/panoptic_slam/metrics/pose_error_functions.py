@@ -19,7 +19,8 @@ def trans_error(ref_positions, est_positions):
             ref_positions.shape, est_positions.shape))
 
     pose_diff = ref_positions - est_positions
-    pose_err = np.sqrt(np.dot(pose_diff, pose_diff))
+    pose_err = np.sum(np.square(pose_diff), axis=1)
+    pose_err = np.sqrt(pose_err)
 
     return pose_err
 
