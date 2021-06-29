@@ -2,6 +2,8 @@ from enum import Enum
 from datetime import datetime
 
 import numpy as np
+
+import genpy
 import rospy
 
 import panoptic_slam.ros.utils as ru
@@ -81,7 +83,7 @@ class KittiTimestamps:
         if isinstance(ts, datetime):
             ts = ru.stamp_to_rospy(ts)
 
-        if isinstance(ts, rospy.Time):
+        if isinstance(ts, (rospy.Time, genpy.rostime.Time)):
             ts = ts.to_nsec()
 
         if ts in self._lookup_table:
