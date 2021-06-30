@@ -15,6 +15,8 @@
     <arg name="sim_quiet" default="false"/>
     <arg name="sim_rate" default="0.25"/>
 
+    <arg name="err_output_dir" default="$(find panoptic_slam)/../../../res/tst/kitti/$(arg kitti_sequence)/pose_err/vanilla/" />
+
     <arg name="output" default="screen"/>
 
     <arg name="filter_point_cloud" default="false"/>
@@ -50,6 +52,13 @@
     <!--- Run Rviz-->
     <include file="$(find panoptic_slam)/launch/debugging/module_rviz.launch">
         <arg name="cfg" value="$(arg rviz_cfg)"/>
+    </include>
+
+    <!-- Error recorder -->
+    <include file="$(find panoptic_slam)/launch/nodes/kitti/kitti_gt_pose_error.launch">
+        <arg name="kitti_dataset_path" value="$(arg kitti_dataset_path)"/>
+        <arg name="kitti_sequence" value="$(arg kitti_sequence)"/>
+        <arg name="output_dir" value="$(arg err_output_dir)"/>
     </include>
 
 </launch>

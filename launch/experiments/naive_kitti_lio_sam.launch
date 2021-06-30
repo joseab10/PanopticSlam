@@ -8,6 +8,8 @@
     <arg name="sim_quiet" default="false"/>
     <arg name="sim_rate" default="0.1"/>
 
+    <arg name="err_output_dir" default="$(find panoptic_slam)/../../../res/tst/kitti/$(arg kitti_sequence)/pose_err/naive/" />
+
     <arg name="output" default="screen"/>
 
     <arg name="filter_point_cloud" default="true"/>
@@ -26,6 +28,7 @@
         <arg name="sim_rate"             value="$(arg sim_rate)"/>
         <arg name="filter_point_cloud"   value="$(arg filter_point_cloud)"/>
         <arg name="output"               value="$(arg output)"/>
+        <arg name="err_output_dir"       value="$(arg err_output_dir)"/>
         <arg name="rviz_cfg"             value="$(arg rviz_cfg)"/>
     </include>
 

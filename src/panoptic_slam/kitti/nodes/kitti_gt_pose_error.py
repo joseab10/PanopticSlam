@@ -52,7 +52,7 @@ class KittiGTPoseError:
 
         self._path_subscriber = rospy.Subscriber("/lio_sam/mapping/path", Path, self._path_callback)
         self._save_service_provider = rospy.Service("/save_data", Trigger, self._save_callback)
-        rospy.on_shutdown(self.save_output)
+        rospy.on_shutdown(self._shutdown_save_output)
 
     def _path_callback(self, msg):
 
@@ -112,6 +112,18 @@ class KittiGTPoseError:
             return False, e
 
         return True, "Saved file {}.\n".format(file_path)
+
+    def _shutdown_save_output(self):
+        success, message = self.save_output()
+
+        messages = message.split("\n")
+
+        if success:
+            for m in messages:
+                rospy.loginfo(m)
+        else:
+            for m in messages:
+                rospy.logwarn(m)
 
     def save_output(self):
         success = True
