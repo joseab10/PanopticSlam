@@ -126,7 +126,7 @@ def match_timestamps(gt_timestamps, est_timestamps, **kwargs):
     Finds the correspondence between the Ground Truth and Estimated timestamps.
 
     :param gt_timestamps: (KittiTimestamps) KittiTimestamps object for the ground truth timestamps.
-    :param est_timestamps: (list, np.ndarray[m]) Array of estimated timestamps in seconds.
+    :param est_timestamps: (list, np.ndarray[m]) Array of estimated timestamps in nanoseconds.
     :param kwargs: (dict) * time_matching (TimeMatching, Default:Minimum) Time
 
     :return: (tuple): * gt_pose_indices (np.ndarray[n<=m]) Array containing the frame ids from the GT that matched with

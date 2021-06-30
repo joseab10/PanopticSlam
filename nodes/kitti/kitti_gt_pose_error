@@ -11,6 +11,8 @@ if __name__ == "__main__":
     kitti_dir = rospy.get_param("kitti_dataset_path")
     kitti_seq = rospy.get_param("kitti_sequence")
 
-    node = KittiGTPoseError(kitti_dir, kitti_seq)
+    output_dir = rospy.get_param("~output_dir")
+
+    node = KittiGTPoseError(kitti_dir, kitti_seq, output_dir)
 
     rospy.spin()

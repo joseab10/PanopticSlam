@@ -1,69 +1,125 @@
 # Standard Libraries
-from collections import OrderedDict
+from os import path
 
 # Third Party Libraries
 import numpy as np
 import rospy
+from std_srvs.srv import Trigger, TriggerResponse
 from nav_msgs.msg import Path
-from tf import transformations as trans
+from scipy.spatial.transform.rotation import Rotation
 
 # Project Libraries
-from panoptic_slam.kitti.data_loaders import KittiOdomDataYielder, KittiRawDataYielder
-import panoptic_slam.kitti.utils.utils as ku
-from panoptic_slam.ros.utils import stamp_to_rospy
-import panoptic_slam.geometry.transforms.utils as tu
+from panoptic_slam.kitti.data_analysers.kitti_pose_error import compute_pose_error, load_gt_poses, match_timestamps
 
 
 class KittiGTPoseError:
 
-    def __init__(self, kitti_dir, kitti_seq):
+    def __init__(self, kitti_dir, kitti_seq, output_dir, **kwargs):
 
-        self._kitti_dir = kitti_dir
-        self._kitti_seq = kitti_seq
+        self._gt_poses_loader, self._gt_timestamps, self._gt_poses = load_gt_poses(kitti_dir, kitti_seq)
+        self._output_dir = output_dir
 
-        self._kitti = KittiOdomDataYielder(self._kitti_dir, self._kitti_seq)
+        self._steps = 0  # Number of received trajectories.
 
-        date = ku.get_raw_seq_date(self._kitti_seq)
-        drive = ku.get_raw_seq_drive(self._kitti_seq)
-        start_frame = ku.get_raw_seq_start_frame(self._kitti_seq)
-        end_frame = ku.get_raw_seq_end_frame(self._kitti_seq)
+        self._field_sep = kwargs.get("field_sep", " ")
+        self._line_sep = kwargs.get("line_sep", "\n")
 
-        self._raw_kitti = KittiRawDataYielder(self._kitti_dir, date, drive, sync=True,
-                                              start_frame=start_frame, end_frame=end_frame)
-        timestamps = self._raw_kitti.get_timestamps("velo")
-        self._gt_poses = self._kitti.get_poses()
-        self._timestamps_dict = OrderedDict((stamp_to_rospy(t).to_nsec(), i) for i, t in enumerate(timestamps))
-        self._timestamps_arr = np.array([stamp_to_rospy(t).to_nsec() for t in timestamps], dtype=np.int)
-        self._poses = []
-        self._ref_transforms = []
-        self._exact_match = False
-        self._ts_mismatch_ns = []
+        self._file_desc = {
+            # Each trajectory a list of: [step, frame, ts, x, y, z, r, p, y]
+            "trajectories": {
+                "filename": "trajectories.csv",
+                "data": np.empty((0, 9)),
+                "header": self._field_sep.join(["step", "frame",
+                                                "ts_[s]", "x_[m]", "y_[m]", "z_[m]",
+                                                "roll_[rad]", "pitch_[rad]", "yaw_[rad]"])
+            },
+            # Errors for each step in a trajectory as list of [step, frame, ts, ts_err, tra_err, rot_err]
+            "errors": {
+                "filename": "errors.csv",
+                "data": np.empty((0, 6)),
+                "header": self._field_sep.join(["step", "frame",
+                                                "ts_[s]", "ts_err_[ns]",
+                                                "tra_err_[m]", "rot_err_[rad]"])
+            },
+            # Relative transformations between GT and Estimated poses for each trajectory
+            "transforms": {
+                "filename": "transforms.csv",
+                "data": np.empty((0, 13)),
+                "header": self._field_sep.join(["step"] +
+                                               ["T_{},{}".format(j, i) for i in range(3) for j in range(4)])
+            }
+        }
 
         self._path_subscriber = rospy.Subscriber("/lio_sam/mapping/path", Path, self._path_callback)
+        self._save_service_provider = rospy.Service("/save_data", Trigger, self._save_callback)
+        rospy.on_shutdown(self.save_output)
 
     def _path_callback(self, msg):
 
-        empty_poses = [None] * len(self._gt_poses)
-        ts_mismatch = [None] * len(self._gt_poses)
+        est_timestamps = [p.header.stamp.to_nsec() for p in msg.poses]
+        est_positions = np.array([[p.pose.position.x, p.pose.position.y, p.pose.position.z] for p in msg.poses])
+        est_quaternions = [[p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w]
+                           for p in msg.poses]
+        est_rotations = Rotation.from_quat(est_quaternions).as_euler("xyz")
+        est_poses = np.concatenate((est_positions, est_rotations), axis=1)
 
-        for p in msg.poses:
-            ts = p.header.stamp.to_nsec()
+        gt_pose_indexes, gt_ts_match_err = match_timestamps(self._gt_timestamps, est_timestamps)
 
-            if ts in self._timestamps_dict:
-                frame = self._timestamps_dict[ts]
-                ns_err = 0
-            else:
-                if self._exact_match:
-                    continue
+        num_poses = len(gt_pose_indexes)
+        tra_err, rot_err, tf, _ = compute_pose_error(self._gt_poses[gt_pose_indexes], est_poses)
 
-                frame = np.argmin(np.abs(self._timestamps_arr - ts))
-                ns_err = self._timestamps_arr[frame] - ts
+        est_ts_s = np.array(est_timestamps, dtype=np.float64) * 1e-9
 
-            pos, ori = p.pose.position, p.pose.orientation
-            tra = np.array([pos.x, pos.y, pos.z])
-            rot = np.array(trans.quaternion_matrix([ori.x, ori.y, ori.z, ori.w])[:3, :3])
-            empty_poses[frame] = tu.transform_from_rot_trans(rot, tra)
-            ts_mismatch[frame] = ns_err
+        self._steps += 1
+        frame_col = np.ones(num_poses) * self._steps
+        frame_col = frame_col.reshape((-1, 1))
+        gt_pose_indexes = gt_pose_indexes.reshape((-1, 1))
+        est_ts_s = est_ts_s.reshape((-1, 1))
+        gt_ts_match_err = gt_ts_match_err.reshape((-1, 1))
+        tra_err = tra_err.reshape((-1, 1))
+        rot_err = rot_err.reshape((-1, 1))
+        tf = tf[:3, :].reshape((1, 12))
+        tf_step = np.ones((1, 1)) * self._steps
 
-        self._poses.append(empty_poses)
-        self._ts_mismatch_ns.append(ts_mismatch)
+        step_trajectories = np.concatenate((frame_col, gt_pose_indexes,
+                                            est_ts_s, est_poses), axis=1)
+        step_errors = np.concatenate((frame_col, gt_pose_indexes,
+                                      est_ts_s, gt_ts_match_err,
+                                      tra_err, rot_err), axis=1)
+        step_tf = np.concatenate((tf_step, tf), axis=1)
+
+        self._file_desc['trajectories']['data'] = np.concatenate((step_trajectories,
+                                                                  self._file_desc['trajectories']['data']), axis=0)
+        self._file_desc['errors']['data'] = np.concatenate((step_errors,
+                                                            self._file_desc['errors']['data']), axis=0)
+        self._file_desc['transforms']['data'] = np.concatenate((step_tf,
+                                                                self._file_desc['transforms']['data']), axis=0)
+
+    def _save_callback(self, req):
+        _ = req
+        success, message = self.save_output()
+        response = TriggerResponse()
+        response.success = success
+        response.message = message
+        return response
+
+    def _save_output_file(self, filename, array, header):
+        try:
+            file_path = path.join(self._output_dir, filename)
+            np.savetxt(file_path, array, header=header, comments="#",
+                       delimiter=self._field_sep, newline=self._line_sep)
+        except Exception as e:
+            return False, e
+
+        return True, "Saved file {}.\n".format(file_path)
+
+    def save_output(self):
+        success = True
+        message = ""
+
+        for _, f in self._file_desc.items():
+            tmp_suc, tmp_msg = self._save_output_file(f['filename'], f['data'], f['header'])
+            success = success and bool(tmp_suc)
+            message = message + str(tmp_msg)
+
+        return success, message
