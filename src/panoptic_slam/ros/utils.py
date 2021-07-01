@@ -25,6 +25,9 @@ def stamp_to_rospy(stamp):
     if isinstance(stamp, float):
         return rospy.Time.from_sec(stamp)
 
+    if isinstance(stamp, (int, np.int, np.int64)):
+        return rospy.Time.from_sec(stamp * 1e-9)
+
     raise TypeError("Invalid stamp data ({}, {}).".format(type(stamp), stamp))
 
 

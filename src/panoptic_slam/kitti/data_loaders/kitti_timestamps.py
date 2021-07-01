@@ -121,3 +121,20 @@ class KittiTimestamps:
                 return None, None
 
         return frame_id, err
+
+    def as_nsec(self):
+        """
+        Returns the stored timestamps as a numpy array of integers in nanoseconds.
+
+        :return: (np.ndarray) Array of timestamps as integers in nanoseconds.
+        """
+
+        return self.timestamps
+
+    def as_sec(self):
+        """
+        Returns the stored timestamps as a numpy array of floats in seconds.
+
+        :return: (np.ndarray) Array of timestamps as floats in seconds.
+        """
+        return self.timestamps.astype(np.float64) * 1e-9

@@ -110,13 +110,14 @@ class KittiDataYielder:
         if self.frame_end is not None:
             end = self.frame_end
         else:
-            if isinstance(max_frame, list):
-                end = (len(max_frame) * step) + i
-            elif isinstance(max_frame, int):
+            if isinstance(max_frame, int):
                 end = max_frame
             else:
-                raise TypeError("Invalid type for the max_frame parameter ({}).\
-                                 Only int and list supported.".format(type(max_frame), max_frame))
+                try:
+                    end = (len(max_frame) * step) + i
+                except Exception:
+                    raise TypeError("Invalid type for the max_frame parameter ({})."
+                                    "Only int and iterables supported.".format(type(max_frame), max_frame))
 
         while i <= end:
             yield i

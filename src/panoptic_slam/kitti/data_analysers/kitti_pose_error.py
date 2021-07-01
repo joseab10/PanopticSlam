@@ -193,7 +193,7 @@ def compute_pcd_pose_error(kitti_dir, seq, trans_pcd_file, **kwargs):
                       gt_pose_indices, est_timestamps * 1e-9)
     print("Saved Estimated Poses (transformed to GT ref frame) to PCD file: {}.".format(trans_poses_pcd_file))
 
-    pose_err = np.stack([gt_pose_indices, np.asarray(gt_timestamps)[gt_pose_indices] * 1e-9, tra_err, rot_err]).T
+    pose_err = np.stack([gt_pose_indices, gt_timestamps.as_sec()[gt_pose_indices], tra_err, rot_err]).T
     np.savetxt(pose_err_file, pose_err, header="Frame_No. GT_Timestamp[s] Trans_Err_[m] Rot_Err_[rad]")
     print("Saved Translational and Rotational Pose Errors to csv file: {}.".format(pose_err_file))
 

@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 
 import argparse
+from os import path
 
 import rosbag
 
+from panoptic_slam.io.utils import parse_path, makedirs
 from panoptic_slam.kitti.converters import RawKitti2LioSamSeqRosBagConverter
 from panoptic_slam.ros.utils import parse_rosbag_compression
 
@@ -28,12 +30,12 @@ def parse_conversions(conv_arg):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="RawKitti2LioSAMSeqRosBAG")
 
-    parser.add_argument("-p", "--kitti_path", type=str, required=True,
+    parser.add_argument("-p", "--kitti_path", type=parse_path, required=True,
                         help="Path to KITTI Dataset directory. \
                              Inside this directory must be the /sequences and /raw directories.")
     parser.add_argument("-s", "--seq", type=int, required=True,
                         help="KITTI Odometry dataset sequence. Valid values: (0-21).")
-    parser.add_argument("-o", "--output", type=str, required=True,
+    parser.add_argument("-o", "--output", type=parse_path, required=True,
                         help="Path and filename to output ROSBag.")
     parser.add_argument("-c", "--convert", type=parse_conversions, default='static_tf,raw_imu,gps_fix,gps_vel,velodyne',
                         help="Comma-separated list of data to be converted. Can include one or more of \
@@ -46,6 +48,8 @@ if __name__ == "__main__":
     unknown_args[:-1:2] = [a.replace("-", "") for a in unknown_args[:-1:2]]  # Remove dashes for unknown args
     kwargs = dict(zip(unknown_args[:-1:2], unknown_args[1::2]))
     kwargs.update(args.convert)
+
+    makedirs(path.dirname(args.outut))
 
     bag = rosbag.Bag(args.output, "w", compression=args.compression)
 

@@ -2,15 +2,18 @@
 
 from argparse import ArgumentParser
 
+from panoptic_slam.io.utils import parse_path
 from panoptic_slam.kitti.data_loaders import download_raw_data
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(prog="raw_kitti_download")
 
-    parser.add_argument("download_dir", help="Directory where the ZIP data will be downloaded")
-    parser.add_argument("-e", "--extract_dir", required=False, help="Directory where ZIP files will be extracted.\
-    If left undefined, files will be extracted to DOWNLOAD_DIR.")
+    parser.add_argument("download_dir", type=parse_path,
+                        help="Directory where the ZIP data will be downloaded")
+    parser.add_argument("-e", "--extract_dir", required=False, type=parse_path,
+                        help="Directory where ZIP files will be extracted."
+                             "If left undefined, files will be extracted to DOWNLOAD_DIR.")
     subparsers = parser.add_subparsers(title='Dataset download by')
     seq_parser = subparsers.add_parser("s", help="Download by Sequence. Arguments:\n\t * SEQ: Sequence Number")
     seq_parser.add_argument("seq", type=int, help="KITTI Odometry Sequence. \

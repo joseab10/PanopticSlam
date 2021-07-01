@@ -85,7 +85,7 @@ class RawKitti2RosBagConverter(Kitti2RosBagConverter):
 
         if self._convert_raw_imu:
             oxts_timestamps = self.kitti_loader.get_timestamps("oxts")
-            ts = [ku.stamp_to_sec(t) for t in oxts_timestamps]
+            ts = [t for t in oxts_timestamps.as_sec()]
             x = np.asarray(range(len(ts)), dtype=np.float64)
             linear_ts = np.polyfit(x, ts, 1)
 
