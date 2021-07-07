@@ -10,7 +10,7 @@ from scipy.spatial.transform.rotation import Rotation
 
 # Project Libraries
 from panoptic_slam.kitti.data_analysers.kitti_pose_error import compute_pose_error, load_gt_poses, match_timestamps
-
+from panoptic_slam.io.utils import mkdir
 
 class KittiGTPoseError:
 
@@ -129,6 +129,8 @@ class KittiGTPoseError:
     def save_output(self):
         success = True
         message = ""
+
+        mkdir(self._output_dir)
 
         for _, f in self._file_desc.items():
             tmp_suc, tmp_msg = self._save_output_file(f['filename'], f['data'], f['header'])
