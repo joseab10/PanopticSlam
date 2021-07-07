@@ -183,6 +183,7 @@ catkin_install_python(
         PROGRAMS
             # ROS Nodes
             nodes/kitti/kitti_gt_panoptic_labeler
+            nodes/kitti/kitti_gt_pose_error
             nodes/panoptic_slam/semantic_pcl_filter
 
             # Misc Scripts
@@ -191,6 +192,8 @@ catkin_install_python(
             scripts/kitti_tools/kitti_data_analysis.py
             scripts/kitti_tools/kitti_gt_poses_to_pcd.py
             scripts/kitti_tools/kitti_pcd_pose_errors.py
+
+            scripts/utils/transform_pcd.py
         DESTINATION
             ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
