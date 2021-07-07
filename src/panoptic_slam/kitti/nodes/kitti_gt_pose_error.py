@@ -47,6 +47,13 @@ class KittiGTPoseError:
                 "data": np.empty((0, 13)),
                 "header": self._field_sep.join(["step"] +
                                                ["T_{},{}".format(j, i) for i in range(3) for j in range(4)])
+            },
+
+            "last_transform": {
+                "filename": "last_transform.csv",
+                "data": np.empty((0, 13)),
+                "header": self._field_sep.join(["step"] +
+                                               ["T_{},{}".format(j, i) for i in range(3) for j in range(4)])
             }
         }
 
@@ -95,6 +102,7 @@ class KittiGTPoseError:
                                                             self._file_desc['errors']['data']), axis=0)
         self._file_desc['transforms']['data'] = np.concatenate((step_tf,
                                                                 self._file_desc['transforms']['data']), axis=0)
+        self._file_desc['last_transform']['data'] = step_tf
 
     def _save_callback(self, req):
         _ = req
