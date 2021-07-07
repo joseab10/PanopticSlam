@@ -3,7 +3,7 @@
 import argparse
 from os import path
 
-from panoptic_slam.io.utils import parse_path, makedirs
+from panoptic_slam.io.utils import parse_path, mkdir
 from panoptic_slam.kitti.data_loaders import KittiGTPosesLoader
 
 if __name__ == "__main__":
@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    makedirs(path.dirname(args.pcd_file))
+    mkdir(path.dirname(args.pcd_file))
 
     print("Loading timestamps and ground truth poses for KITTI sequence {}.".format(args.seq))
     converter = KittiGTPosesLoader(args.kitti_dir, args.seq)
