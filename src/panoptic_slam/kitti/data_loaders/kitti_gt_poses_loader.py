@@ -17,7 +17,7 @@ class KittiGTPosesLoader:
         end_frame = ku.get_raw_seq_end_frame(seq)
         kwargs['start_frame'] = start_frame
         kwargs['end_frame'] = end_frame
-        transform_to_velo_frame = kwargs.get("transform_to_velo_frame", True)
+        transform_to_velo_frame = kwargs.get("transform_to_velo_frame", False)
 
         self.raw_kitti = KittiRawDataYielder(kitti_dir, date, drive, **kwargs)
         self._odom_poses = kwargs.get("odom_poses", False)

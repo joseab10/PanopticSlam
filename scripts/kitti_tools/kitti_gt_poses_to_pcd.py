@@ -17,12 +17,15 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--pcd_file", required=True, type=parse_path,
                         help="Path and filename of the PCD file where to store the converted poses as a pointcloud.")
 
+    parser.add_argument("-t", "--transform_to_velo_frame", action="store_true",
+                        help="Transform the poses to the velodyne reference frame if set.")
+
     args = parser.parse_args()
 
     mkdir(path.dirname(args.pcd_file))
 
     print("Loading timestamps and ground truth poses for KITTI sequence {}.".format(args.seq))
-    converter = KittiGTPosesLoader(args.kitti_dir, args.seq)
+    converter = KittiGTPosesLoader(args.kitti_dir, args.seq, transform_to_velo_frame=args.transform_to_velo_frame)
     print("Converting poses to PCD file.")
     converter.save_as_pcd(args.pcd_file)
     print("Ground truth poses saved as PCD file in {}.".format(args.pcd_file))
