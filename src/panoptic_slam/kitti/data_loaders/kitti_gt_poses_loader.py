@@ -52,4 +52,4 @@ class KittiGTPosesLoader:
         return self._orientations
 
     def save_as_pcd(self, pcd_file):
-        save_poses_as_pcd(pcd_file, self._positions, self._orientations, None, self._timestamps)
+        save_poses_as_pcd(pcd_file, self._positions, self._orientations, None, self._timestamps.as_sec())
