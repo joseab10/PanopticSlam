@@ -54,6 +54,13 @@ class KittiOdomDataYielder(KittiDataYielder):
         for t, i in zip(velo_timestamps, self.frame_range(velo_timestamps)):
             yield t, self.get_velo_by_index(i)
 
+    def yield_labels(self):
+        velo_timestamps = self.get_timestamps(None)
+
+        for t, i in zip(velo_timestamps, self.frame_range(velo_timestamps)):
+            classes, instances = self.get_labels_by_index(i)
+            yield t, classes, instances
+
     def get_poses(self, odom=False):
 
         if not ku.has_gt(self.seq):
