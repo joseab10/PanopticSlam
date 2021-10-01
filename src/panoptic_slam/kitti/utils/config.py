@@ -56,6 +56,12 @@ KITTI_STR = {
 # KITTI Raw Dataset download url
 RAW_KITT_URL = "https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/"
 
+# KITTI Odometry Dataset download URLs
+KITTI_ODO_URLS = {
+    'calib': "https://s3.eu-central-1.amazonaws.com/avg-kitti/data_odometry_calib.zip",
+    'velo': "https://s3.eu-central-1.amazonaws.com/avg-kitti/data_odometry_velodyne.zip",
+    'odom': "https://s3.eu-central-1.amazonaws.com/avg-kitti/data_odometry_poses.zip",
+}
 
 # Kitti Raw available datasets
 RAW_KITTI_DATASETS = {
