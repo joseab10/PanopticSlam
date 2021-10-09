@@ -7,43 +7,43 @@ import genpy
 import rospy
 
 import panoptic_slam.ros.utils as ru
-
-
-class TimeMatching(Enum):
-    Exact = 0
-    Minimum = 1
-    Previous = 2
-    Next = 3
-
-    @classmethod
-    def __contains__(cls, item):
-        try:
-            cls(item)
-        except ValueError:
-            return False
-        else:
-            return True
+from exceptions import KittiTimeError
 
 
 class KittiTimestamps:
 
-    def __init__(self, timestamps, frame_indexes=None):
+    class TimeMatching(Enum):
+        Exact = 0
+        Minimum = 1
+        Previous = 2
+        Next = 3
 
-        if isinstance(timestamps, list):
-            timestamps = np.array(timestamps)
+        @classmethod
+        def __contains__(cls, item):
+            try:
+                cls(item)
+            except ValueError:
+                return False
+            else:
+                return True
 
-        if not isinstance(timestamps, np.ndarray):
-            raise TypeError("Invalid type ({}) for timestamps.".format(type(timestamps)))
+    def __init__(self, ts_list_in_ns, frame_indexes=None):
 
-        if timestamps.dtype == np.object:
-            if isinstance(timestamps[0], datetime):
-                timestamps = np.array([ru.stamp_to_rospy(t).to_nsec() for t in timestamps])
-            if isinstance(timestamps[0], rospy.Time):
-                timestamps = np.array([t.to_nsecs() for t in timestamps])
+        if isinstance(ts_list_in_ns, list):
+            ts_list_in_ns = np.array(ts_list_in_ns)
 
-        self.timestamps = timestamps
+        if not isinstance(ts_list_in_ns, np.ndarray):
+            raise TypeError("Invalid type ({}) for timestamps.".format(type(ts_list_in_ns)))
 
-        ts_len = len(timestamps)
+        if ts_list_in_ns.dtype == np.object:
+            if isinstance(ts_list_in_ns[0], datetime):
+                ts_list_in_ns = np.array([ru.stamp_to_rospy(t).to_nsec() for t in ts_list_in_ns])
+            if isinstance(ts_list_in_ns[0], rospy.Time):
+                ts_list_in_ns = np.array([t.to_nsecs() for t in ts_list_in_ns])
+
+        self.timestamps = ts_list_in_ns
+
+        ts_len = len(ts_list_in_ns)
 
         if frame_indexes is None:
             frame_indexes = range(ts_len)
@@ -54,7 +54,7 @@ class KittiTimestamps:
             raise ValueError("Timestamps and Frame indexes have different sizes ({}, {}).".format(ts_len, f_len))
 
         # Build a lookup table for O(1) searches for exact timestamp matches.
-        self._lookup_table = {t: i for t, i in zip(timestamps, frame_indexes)}
+        self._lookup_table = {t: i for t, i in zip(ts_list_in_ns, frame_indexes)}
 
     def __repr__(self):
         return repr(self.timestamps)
@@ -77,7 +77,7 @@ class KittiTimestamps:
         :param max_error: (float, Default:None) Maximum allowable error between given timestamp and those in array.
         :return: (tuple) (frame_id, error)
         """
-        if ts_matching not in TimeMatching:
+        if ts_matching not in self.TimeMatching:
             raise ValueError("Invalid TimeMatching method ({}).".format(ts_matching))
 
         if isinstance(ts, datetime):
@@ -89,23 +89,23 @@ class KittiTimestamps:
         if ts in self._lookup_table:
             return self._lookup_table[ts], 0
 
-        if ts_matching == TimeMatching.Exact:
-            return None, None
+        if ts_matching == self.TimeMatching.Exact:
+            raise KittiTimeError("No exact match found for stamp {}.".format(ts))
 
         closest_ts_idx = 0
 
-        if ts_matching == TimeMatching.Minimum:
+        if ts_matching == self.TimeMatching.Minimum:
             time_diff = self.timestamps - ts
             closest_ts_idx = np.argmin(np.abs(time_diff))
 
-        if ts_matching == TimeMatching.Previous:
+        if ts_matching == self.TimeMatching.Previous:
             potential_idx = np.where(self.timestamps <= ts)
             if len(potential_idx) == 0:
                 return None, None
 
             closest_ts_idx = np.max(potential_idx)
 
-        if ts_matching == TimeMatching.Next:
+        if ts_matching == self.TimeMatching.Next:
             potential_idx = np.where(self.timestamps >= ts)
             if len(potential_idx) == 0:
                 return None, None
